@@ -8,27 +8,34 @@
 using namespace Rcpp;
 
 // cvode
-NumericMatrix cvode(const NumericVector& yv, const NumericVector& times, const RObject& fderiv, RObject& param, const double abstol, const double reltol, RObject fjac, RObject jacmat_, std::string rmumps_perm);
-RcppExport SEXP _rsundials_cvode(SEXP yvSEXP, SEXP timesSEXP, SEXP fderivSEXP, SEXP paramSEXP, SEXP abstolSEXP, SEXP reltolSEXP, SEXP fjacSEXP, SEXP jacmat_SEXP, SEXP rmumps_permSEXP) {
+NumericMatrix cvode(const NumericVector& yv, const vec& times, const RObject& frhs, RObject param, const double abstol, const double reltol, const std::string integrator, const int maxord, const int maxsteps, const vec& constraints, const RObject fjac, const int nz, const std::string rmumps_perm, const int nroot, const RObject froot, const RObject fevent);
+RcppExport SEXP _rsundials_cvode(SEXP yvSEXP, SEXP timesSEXP, SEXP frhsSEXP, SEXP paramSEXP, SEXP abstolSEXP, SEXP reltolSEXP, SEXP integratorSEXP, SEXP maxordSEXP, SEXP maxstepsSEXP, SEXP constraintsSEXP, SEXP fjacSEXP, SEXP nzSEXP, SEXP rmumps_permSEXP, SEXP nrootSEXP, SEXP frootSEXP, SEXP feventSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const NumericVector& >::type yv(yvSEXP);
-    Rcpp::traits::input_parameter< const NumericVector& >::type times(timesSEXP);
-    Rcpp::traits::input_parameter< const RObject& >::type fderiv(fderivSEXP);
-    Rcpp::traits::input_parameter< RObject& >::type param(paramSEXP);
+    Rcpp::traits::input_parameter< const vec& >::type times(timesSEXP);
+    Rcpp::traits::input_parameter< const RObject& >::type frhs(frhsSEXP);
+    Rcpp::traits::input_parameter< RObject >::type param(paramSEXP);
     Rcpp::traits::input_parameter< const double >::type abstol(abstolSEXP);
     Rcpp::traits::input_parameter< const double >::type reltol(reltolSEXP);
-    Rcpp::traits::input_parameter< RObject >::type fjac(fjacSEXP);
-    Rcpp::traits::input_parameter< RObject >::type jacmat_(jacmat_SEXP);
-    Rcpp::traits::input_parameter< std::string >::type rmumps_perm(rmumps_permSEXP);
-    rcpp_result_gen = Rcpp::wrap(cvode(yv, times, fderiv, param, abstol, reltol, fjac, jacmat_, rmumps_perm));
+    Rcpp::traits::input_parameter< const std::string >::type integrator(integratorSEXP);
+    Rcpp::traits::input_parameter< const int >::type maxord(maxordSEXP);
+    Rcpp::traits::input_parameter< const int >::type maxsteps(maxstepsSEXP);
+    Rcpp::traits::input_parameter< const vec& >::type constraints(constraintsSEXP);
+    Rcpp::traits::input_parameter< const RObject >::type fjac(fjacSEXP);
+    Rcpp::traits::input_parameter< const int >::type nz(nzSEXP);
+    Rcpp::traits::input_parameter< const std::string >::type rmumps_perm(rmumps_permSEXP);
+    Rcpp::traits::input_parameter< const int >::type nroot(nrootSEXP);
+    Rcpp::traits::input_parameter< const RObject >::type froot(frootSEXP);
+    Rcpp::traits::input_parameter< const RObject >::type fevent(feventSEXP);
+    rcpp_result_gen = Rcpp::wrap(cvode(yv, times, frhs, param, abstol, reltol, integrator, maxord, maxsteps, constraints, fjac, nz, rmumps_perm, nroot, froot, fevent));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_rsundials_cvode", (DL_FUNC) &_rsundials_cvode, 9},
+    {"_rsundials_cvode", (DL_FUNC) &_rsundials_cvode, 16},
     {NULL, NULL, 0}
 };
 

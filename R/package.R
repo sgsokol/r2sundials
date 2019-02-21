@@ -9,3 +9,6 @@
 #' @useDynLib rsundials
 #' @name rsundials
 NULL
+RSUNDIALS_EVENT_IGNORE=0
+RSUNDIALS_EVENT_HOLD=1
+RSUNDIALS_EVENT_STOP=-1

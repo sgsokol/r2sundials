@@ -7,6 +7,7 @@
 SUNLinearSolver SUNLinSol_RMUMPS(N_Vector y, SUNMatrix A, rmumps_perm_t permutation=perm_auto)
 {
 //Rcout << "call SUNLinSol_RMUMPS\n";
+//Rcout << "permutation=" << permutation << "\n";
   SUNLinearSolver S;
   SUNLinearSolver_Ops ops;
   SUNLinearSolverContent_RMUMPS content;
@@ -18,14 +19,11 @@ SUNLinearSolver SUNLinSol_RMUMPS(N_Vector y, SUNMatrix A, rmumps_perm_t permutat
     return(NULL);
   if (SUNSparseMatrix_Rows(A) != SUNSparseMatrix_Columns(A))
     return(NULL);
-  MatrixRows = SUNSparseMatrix_Rows(A);
   if (N_VGetVectorID(y) != SUNDIALS_NVEC_SERIAL)
     return(NULL);
 
   // optimally this function would be replaced with a generic N_Vector routine
-  VecLength = NV_LENGTH_S(y);
-  if (MatrixRows != VecLength)
-    return(NULL);
+  int n = NV_LENGTH_S(y), nz=SM_NNZ_S(A);
   
   // Create linear solver
   S = NULL;
@@ -62,9 +60,10 @@ SUNLinearSolver SUNLinSol_RMUMPS(N_Vector y, SUNMatrix A, rmumps_perm_t permutat
   if (SUNSparseMatrix_SparseType(A) != CSC_MAT) {
     stop("SUNLinSol_RMUMPS: wrong sparse matrix type, expected CSC_MAT");
   }
-  MUMPS_INT n=SM_COLUMNS_S(A), nz=SM_NNZ_S(A);
-  if (n != SM_ROWS_S(A))
-    stop("SUNLinSol_RMUMPS: matrix is supposed to be square, instead got %dx%d", SM_ROWS_S(A), n);
+  if (n != SM_COLUMNS_S(A))
+    stop("SUNLinSol_RMUMPS: ncol(A) (%d) and length(y) (%d) don't concord", SM_COLUMNS_S(A), n);
+  if (SM_COLUMNS_S(A) != SM_ROWS_S(A))
+    stop("SUNLinSol_RMUMPS: matrix is supposed to be square, instead got %dx%d", SM_ROWS_S(A), SM_COLUMNS_S(A));
   // build jcp array from irp and pc
   ivec ir(SM_INDEXVALS_S(A), nz, false);
   ivec pc(SM_INDEXPTRS_S(A), n+1, false);
@@ -76,12 +75,8 @@ SUNLinearSolver SUNLinSol_RMUMPS(N_Vector y, SUNMatrix A, rmumps_perm_t permutat
 
   content->irp=new Col<MUMPS_INT>(ir+1);
   content->jcp=new Col<MUMPS_INT>(nz);
-  for (int j=1; j <= n; j++) {
-//printf("j=%d\n", j);
-    content->jcp->subvec(pc[j-1], pc[j]-1).fill(j);
-  }
   
-  content->rmu=new Rmumps((MUMPS_INT *)content->irp->begin(), (MUMPS_INT *)content->jcp->begin(), (double *) SM_DATA_S(A), (MUMPS_INT) n,  (MUMPS_INT) nz, (MUMPS_INT) 0); // 0=non symmetric matrix;
+  content->rmu=new Rmumps((MUMPS_INT *)content->irp->begin(), (MUMPS_INT *)content->jcp->begin(), (double *) SM_DATA_S(A), (MUMPS_INT) n,  (MUMPS_INT) pc[n], (MUMPS_INT) 0); // 0=non symmetric matrix;
   content->rmu->set_permutation(permutation);
 /*
 List asl=content->rmu->triplet();
