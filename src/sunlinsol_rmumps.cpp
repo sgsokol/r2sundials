@@ -4,7 +4,7 @@
 // exported functions
 
 // Function to create a new RMUMPS linear solver
-SUNLinearSolver SUNLinSol_RMUMPS(N_Vector y, SUNMatrix A, rmumps_perm_t permutation=perm_auto)
+SUNLinearSolver SUNLinSol_RMUMPS(N_Vector y, SUNMatrix A, int  permutation=RMUMPS_PERM_AUTO)
 {
 //Rcout << "call SUNLinSol_RMUMPS\n";
 //Rcout << "permutation=" << permutation << "\n";
@@ -150,7 +150,7 @@ for (auto i: RMU(S)->jcn)
 //RMUMPS_CONTENT(S)->irp->print("new irp");
 //RMUMPS_CONTENT(S)->jcp->print("new jcp");
     RMU(S)=new Rmumps((MUMPS_INT *)RMUMPS_CONTENT(S)->irp->begin(), (MUMPS_INT *)RMUMPS_CONTENT(S)->jcp->begin(), (double *) SM_DATA_S(A), (MUMPS_INT) n,  (MUMPS_INT) nz, (MUMPS_INT) 0); // 0=non symmetric matrix;
-    RMU(S)->set_permutation((rmumps_perm_t) permutation);
+    RMU(S)->set_permutation(permutation);
   /*} else if (std::equal(RMU(S)->anz.begin(), RMU(S)->anz.end(), SM_DATA_S(A))) {
     // matrix did not change
     LASTFLAG(S) = SUNLS_SUCCESS;

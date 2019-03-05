@@ -4,6 +4,7 @@ library(RcppArmadillo)
 library(RcppXPtrUtils)
 library(deSolve)
 library(slam)
+library(RcppXPtrUtils)
 library(rsundials)
 
 test_check("rsundials")

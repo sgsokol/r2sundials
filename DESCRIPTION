@@ -1,8 +1,8 @@
 Package: rsundials
 Type: Package
 Title: Rcpp wrapper for SUNDIALS CVODE C code solving ordinary differential equations
-Version: 0.1
-Date: 2019-01-21
+Version: 4.1.0-1
+Date: 2019-02-27
 Author: Serguei Sokol
 Maintainer: <serguei.sokol@gmail.com>
 Description: Interface for commonly used SUNDIALS library for solving ODE equations is made R friendly by allowing to pass custom parameters to user RHS function. This latter can be both written in R and in C++ (Rcpp flavor). In case of C++, performance is greatly improved so this option is highly advisable. Jacobian can be specified as either dense or sparse matrix. In the latter case rmumps package is used to solve corresponding linear systems. Root finding (i.e. event management) is optional and can be too specified as R or C++ function.
