@@ -1,7 +1,7 @@
 // -*- mode: C++; c-indent-level: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 #include <rsundials.h>
 // [[Rcpp::export]]
-NumericMatrix cvodes(const NumericVector &yv, const vec &times, const RObject &frhs, RObject param=R_NilValue, const double abstol=1.e-8, const double reltol=1.e-8, const Nullable<int> integrator_=R_NilValue, const int maxord=0, const int maxsteps=0, const vec &constraints=NumericVector::create(), const RObject fjac=R_NilValue, const int nz=0, const Nullable<int> rmumps_perm_=R_NilValue, const int nroot=0, const RObject froot=R_NilValue, const RObject fevent=R_NilValue,
+NumericMatrix cvodes(const NumericVector &yv, const vec &times, const RObject &frhs, RObject param=R_NilValue, const double abstol=1.e-8, const double reltol=1.e-8, const Nullable<int> integrator_=R_NilValue, const int maxord=0, const int maxsteps=0, const double hin=0., const double hmax=0., const double hmin=0., const vec &constraints=NumericVector::create(), const RObject fjac=R_NilValue, const int nz=0, const Nullable<int> rmumps_perm_=R_NilValue, const int nroot=0, const RObject froot=R_NilValue, const RObject fevent=R_NilValue,
 const int Ns=0, NumericVector psens=NumericVector::create(), NumericVector psens_bar=NumericVector::create(), const IntegerVector psens_list=IntegerVector::create(), const RObject fsens=R_NilValue, const RObject fsens1=R_NilValue, const Nullable<int> sens_method_=R_NilValue, const bool errconS=true) {
   //long clk_tck = CLOCKS_PER_SEC;
   //clock_t t1, t2;
@@ -57,8 +57,15 @@ const int Ns=0, NumericVector psens=NumericVector::create(), NumericVector psens
   check_retval(CVodeSetErrHandlerFn(cvode_mem, rsunerr, NULL));
   // Set cvode_mem and put different solver components
   if (maxord > 0)
-    check_retval(CVodeSetMaxOrd(cvode_mem, maxsteps));
-  check_retval(CVodeSetMaxNumSteps(cvode_mem, maxord));
+    check_retval(CVodeSetMaxOrd(cvode_mem, maxord));
+  if (maxsteps > 0)
+    check_retval(CVodeSetMaxNumSteps(cvode_mem, maxsteps));
+  if (hin > 0.)
+    check_retval(CVodeSetInitStep(cvode_mem, hin));
+  if (hmin > 0.)
+    check_retval(CVodeSetMinStep(cvode_mem, hmin));
+  if (hmax > 0.)
+    check_retval(CVodeSetMaxStep(cvode_mem, hmax));
   check_retval(CVodeInit(cvode_mem, rhswrap, times[0], nv_y));
   check_retval(CVodeSStolerances(cvode_mem, reltol, abstol));
   check_retval(CVodeSetUserData(cvode_mem, user_data));
