@@ -27,6 +27,67 @@ typedef struct {
   List lp;
 } UserData;
 
+typedef void (*funfree)(void *);
+typedef void (*funfreep)(void **);
+template <typename T>
+using  funfree1=void (*)(void *, T);
+
+template <typename T>
+class Sunmem {
+public:
+  Sunmem() {}; // constructor
+  ~Sunmem(); // destructor
+  void add(void **pptr, funfree f);
+  void add(void **pptr, funfreep f);
+  void add(void **pptr, funfree1<T> f, T arg);
+private:
+  std::vector<void**> vecptr;
+  std::vector<void**> vecptrp;
+  std::vector<void**> vecptr1;
+  std::vector<funfree> vecf;
+  std::vector<funfreep> vecfp;
+  std::vector<funfree1<T>> vecf1;
+  std::vector<T> vecarg;
+};
+// helper class for memory freeing
+// serial destructor
+template<typename T>
+Sunmem<T>::~Sunmem<T>() {
+/*
+Rcout << "call ~Sunmem\n";
+Rcout << "freeing\t" << vecptr.size() << " simple pointers\n";
+Rcout << "freeing\t" << vecptr1.size() << " simple pointers with one argument\n";
+Rcout << "freeing\t" << vecptrp.size() << " ref pointers\n";
+*/
+  // free simple pointers
+  for (int i=vecptr.size()-1; i >= 0; i--) {
+    (vecf[i])(*(vecptr[i]));
+  }
+  // free simple pointers with an argument
+  for (int i=vecptr1.size()-1; i >= 0; i--)
+    (vecf1[i])(*(vecptr1[i]), vecarg[i]);
+  // free pointers by ref
+  for (int i=vecptrp.size()-1; i >= 0; i--)
+    (vecfp[i])(vecptrp[i]);
+}
+template<typename T>
+void Sunmem<T>::add(void **pptr, funfree f) {
+  vecptr.push_back(pptr);
+  vecf.push_back(f);
+}
+template<typename T>
+void Sunmem<T>::add(void **pptr, funfreep f) {
+  vecptrp.push_back(pptr);
+  vecfp.push_back(f);
+}
+template <typename T>
+void Sunmem<T>::add(void **pptr, funfree1<T> f, T arg) {
+  vecptr1.push_back(pptr);
+  vecf1.push_back(f);
+  vecarg.push_back(arg);
+}
+//template class Sunmem<int>;
+
 // define a type for user supplied function rhs
 typedef int (*rsunRhsFn)(double t, const vec &y, vec &ydot, RObject &param, NumericVector &psens);
 typedef int (*rsunJacFn)(double t, const vec &y, vec &ydot, mat &J, RObject &param, NumericVector &psens, vec &tmp1, vec &tmp2, vec &tmp3);
@@ -45,4 +106,10 @@ int sensrhs1wrap(int Ns, realtype t, N_Vector y, N_Vector ydot, int iS, N_Vector
 
 // error handler
 void rsunerr(int error_code, const char *module, const char *function, char *msg, void *eh_data);
+
+// [[Rcpp::plugins(cpp11)]]
+template <typename... Args>
+inline void warningNoCall(const char* fmt, Args&&... args ) {
+    Rf_warningcall(R_NilValue, tfm::format(fmt, std::forward<Args>(args)... ).c_str());
+}
 #endif

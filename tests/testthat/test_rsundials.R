@@ -122,6 +122,14 @@ int sens_robertson1(int Ns, double t, const vec &y, vec &ydot, int iS, vec &yS, 
 }
 ', depends="RcppArmadillo", includes=includes, cacheDir="lib", verbose=FALSE)
 
+# just rhs
+#print (system.time(
+#out0 <- rsundials::cvodes(yini, times, pfnd, param=parms)
+#))
+
+#print (system.time(
+#out1 <- rsundials::cvodes(yini, times, pfnd, param=parms, fjac=pfnspj, nz=8)
+#))
 # sparse Jacobian
 #print (system.time(
 #out1 <- rsundials::cvodes(yini, times, pfnd, param=parms, fjac=pfnspj, nz=8)

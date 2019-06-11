@@ -1,6 +1,8 @@
 CXX_STD = CXX11
 PKG_CXXFLAGS = -I../inst/include -I@CVODES_INCLUDE@
-PKG_LIBS = -L@CVODES_LIBS@ -lsundials_cvodes @RMUMPS_PATH@/libs/rmumps.so $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS)
+RMUMPS_PATH := $(shell $(R_HOME)/bin/Rscript -e "library(rmumps); cat(path.package('rmumps'))" | sed -e "/WARNING: .*/d")
+
+PKG_LIBS = -L@CVODES_LIBS@ -lsundials_cvodes $(RMUMPS_PATH)/libs/rmumps.so $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS)
 
 #MYCXXFLAGS=-O0
 #%.o: %.cpp 
