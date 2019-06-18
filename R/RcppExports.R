@@ -26,8 +26,8 @@
 #' @param nroot const integer scalar (default 0), defines number of roots that user wishes to track.
 #' @param froot R function of XPtr pointer to Rcpp function (default NULL), user defined function calculating root vector of length 'nroot'. When at least one component of this vector crosses 0, a root finding event is triggered and corresponding root handling function is called (cf. fevent). This defines a very flexible root tracking mecanism. User can define a root based both on time values and state vector (y).
 #' @param fevent R function of XPtr pointer to Rcpp function (default NULL), defines function for root proceeding. When a root is encountered, this function is called. Its return value defines what to do with this root. User's reaction (i.e. the return value of 'fevent') can be one of three types: 
-#'   \cr r2sundials_EVENT_IGNORE - do nothing (can be helpfull if, for example, 0 is crossed not in pertinent sens); \cr r2sundials_EVENT_HOLD - the time point at which the root happend as well as the corresponding root vector are added to the root matrix delivered with output attributes (cf. details).
-#'   This time point is also added to the ODE solution which can lead to a new time point, originally absent in 'times' vector; \cr r2sundials_EVENT_STOP - stops the ODE solving. If it happens before reaching the last value in 'times', the ODE solution can have less time points than initially defined in 'times' parameter.
+#'   \cr R2SUNDIALS_EVENT_IGNORE - do nothing (can be helpfull if, for example, 0 is crossed not in pertinent sens); \cr R2SUNDIALS_EVENT_HOLD - the time point at which the root happend as well as the corresponding root vector are added to the root matrix delivered with output attributes (cf. details).
+#'   This time point is also added to the ODE solution which can lead to a new time point, originally absent in 'times' vector; \cr R2SUNDIALS_EVENT_STOP - stops the ODE solving. If it happens before reaching the last value in 'times', the ODE solution can have less time points than initially defined in 'times' parameter.
 #'   'fevent' is allowed to modify the vector state y in an arbitrary way. It can be helpfull for modeling some controling events for example adding some compound to chemical mix or modifying speed vector if an obstacle is hitted. If such modification takes place, the ODE system is restarted to handle in appropriate way induced discontinuties.
 #' @param Ns const integer scalar (default 0), number of parameters for which forward sensitivity system has to be solved.
 #' @param psens numeric vector (default numeric(0)), if not empty, defines a vector of parameters for which (or for some components of which) forward sensitivity system has to be solved. If its length > Ns, then vector 'psens_list' of length Ns must define what are the Ns components of psens with respect to which sensitivities are to be computed. Note that parameters used in sensitivity calculations must be put in 'psens' vector (and not somewhere in 'param' object) only if user wish to rely on SUNDIALS intenal proceedure for estimation of sensitivity rhs. If user provides its own function for sensititivy rhs, he is free to use either of 'param' or 'psens' for passing and accessing sensitivity parameters.
@@ -60,7 +60,7 @@
 #' \item For sparse Jacobian calculated in C++ the definition is following: int (*fjac)(double t, vec &y, vec &ydot, uvec &i, uvec &p, vec &v, int n, int nz, RObject &param, NumericVector &psens, vec &tmp1, vec &tmp2, vec &tmp3), here n=Neq, nz is passed through from cvodes() arguments. The resulting sparse Jacobian is stored in-place in vectors 'i', 'p', 'v' corresponding to the CSC format. Their respective dimensions are 'nz', 'n+1' and 'nz'. The values stored in 'i' and 'p' must be 0 based as per usage in C++. The return value is a status flag.
 #' }
 #' \cr 'froot' calculates a root vector, i.e. a vector whose components are tracked for 0 crossing during the time course in ODE solving. If written in R, its call follows the following pattern: froot(t, y, param, psens) and it must return a numeric vector of length 'nroot'. If written in C++, it is defined as 'int (*froot)(double t, const vec &y, vec &vroot, RObject &param, NumericVector &psens)'. The tracked values are stored in-place in 'vroot'. The returned value is a status flag.
-#' \cr 'fevent' handles the event of root finding. If written in R, the calling pattern is fevent(t, yvec, rootsfound, param, psens) and the return value is a list with named component "ynew" and "flag". Integer vector 'rootsfound' of length 'nroot' provides information on 'vroot' componets that triggered the root event. If rootsfound[i] != 0, it means that vroot[i] is a root otherwise it is not. Moreover, the sign of rootsfound[i] is meaningfull. If rootsfound[i] > 0 then vroot[i] is increasing at 0 crossing. Respectivly, if rootsfound[i] < 0 then vroot[i] is decreasing. The vector 'ynew' in the output list can define a new state vector after event handling (for example, an abrupt change in velocity direction and/or magnitude after an obstacle hit). The field 'flag' in the output list is authorized to take only three values: r2sundials_EVENT_IGNORE, r2sundials_EVENT_HOLD and r2sundials_EVENT_STOP described herebefore.
+#' \cr 'fevent' handles the event of root finding. If written in R, the calling pattern is fevent(t, yvec, rootsfound, param, psens) and the return value is a list with named component "ynew" and "flag". Integer vector 'rootsfound' of length 'nroot' provides information on 'vroot' componets that triggered the root event. If rootsfound[i] != 0, it means that vroot[i] is a root otherwise it is not. Moreover, the sign of rootsfound[i] is meaningfull. If rootsfound[i] > 0 then vroot[i] is increasing at 0 crossing. Respectivly, if rootsfound[i] < 0 then vroot[i] is decreasing. The vector 'ynew' in the output list can define a new state vector after event handling (for example, an abrupt change in velocity direction and/or magnitude after an obstacle hit). The field 'flag' in the output list is authorized to take only three values: R2SUNDIALS_EVENT_IGNORE, R2SUNDIALS_EVENT_HOLD and R2SUNDIALS_EVENT_STOP described herebefore.
 #' \cr If written in C++, this function is defined as 'int (*fevent)(double t, const vec &y, vec &ynew, const ivec &rootsfound, RObject &param, NumericVector &psens)'. The new state vector can be stored in-place in 'ynew' and the status flag indicating what to do with this event is the return value.
 #' Note that if ynew is different from the vale of y when the root was found the ODE is restarted from this time point to hande correctly the discontinuty. And in the result there will be two columns correspoding to the same time point: one with the state vector at root finding and one with ynew.
 #' \cr 'fsens' calculates rhs for sensitvity system. If written in R, it must defined as \code{fsens(Ns, t, y, ydot, ySm, param, psens)} and return a dataframe in which i-th column correspond to s′[i] sensitivity derivative vector. Among other parameters, it receaves \code{ySm} which is a Neq x Ns matrix having the current values of sensitivity vector (i-th vector is in i-th column).
@@ -130,17 +130,17 @@
 #'   NumericVector p(param);
 #'   static int nbounce=0;
 #'   if (rootsfound[0] > 0) // we cross 0 in ascending trajectory, it can happen when y < 0 in limits of abstol
-#'     return(r2sundials_EVENT_IGNORE);
+#'     return(R2SUNDIALS_EVENT_IGNORE);
 #'   ynew=y;
 #'   if (++nbounce < p["nbounce"]) {
 #'     // here nbounce=1:4
 #'     ynew[2] *= p["k"]; // horizontal speed is lowered
 #'     ynew[3] *= -p["k"]; // vertical speed is lowered and reflected
-#'     return(r2sundials_EVENT_HOLD);
+#'     return(R2SUNDIALS_EVENT_HOLD);
 #'   } else {
 #'     // here nbounce=5
 #'     nbounce=0; // reinit counter for possible next calls to cvodes
-#'     return(r2sundials_EVENT_STOP);
+#'     return(R2SUNDIALS_EVENT_STOP);
 #'   }
 #' }
 #' ', depends=c("RcppArmadillo","r2sundials","rmumps"), includes="using namespace arma;\n#include <r2sundials.h>", cacheDir="lib", verbose=FALSE)

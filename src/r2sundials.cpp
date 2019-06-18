@@ -89,7 +89,8 @@
 //'   ydot[0] = -p["a"]*(y[0]-1);
 //'   return(CV_SUCCESS);
 //' }
-//' ', depends=c("RcppArmadillo","r2sundials","rmumps"), includes="using namespace arma;\n#include <r2sundials.h>", cacheDir="lib", verbose=FALSE)
+//' ', depends=c("RcppArmadillo","r2sundials","rmumps"),
+//'  includes="using namespace arma;\n#include <r2sundials.h>", cacheDir="lib", verbose=FALSE)
 //' # For ease of use in C++, we convert param to a numeric vector instead of a list.
 //' pv=c(a=p$a)
 //' # new call to cvodes() with XPtr pointer ptr_exp.
@@ -97,8 +98,15 @@
 //' stopifnot(diff(range(res_exp2 - res_exp)) < 1.e-14)
 //'
 //' # Ex.3. Bouncing ball simulation.
-//' # A ball falls from a height y=5 m with initial vertical speed vy=0 m/s and horizontal speed vx=1 m/s. The forces exercing on the ball is the gravity (g=9.81 m/s^2) and air resistance f=-k_r*v (k_r=0.1 N*s/m). When the ball hits the ground, it bounces instantly retaining k=0.9 part of its vertical and horizontal speed. At the bounce, the vertical speed change its sign to the opposite while horizontal speed keeps the original sign. Simulation should stop after the 5-th bounce or at tmax=10 s which ever comes first.
-//' # This example illustrates usage of root finding and handling. We decide to implement callback functions in C++.
+//' # A ball falls from a height y=5 m with initial vertical speed vy=0 m/s
+//' # and horizontal speed vx=1 m/s. The forces exercising on the ball is the gravity
+//' # (g=9.81 m/s^2) and air resistance f=-k_r*v (k_r=0.1 N*s/m).
+//' # When the ball hits the ground, it bounces instantly retaining k=0.9 part
+//' # of its vertical and horizontal speed. At the bounce, the vertical speed
+//' # changeс its sign to the opposite while horizontal speed keeps the original sign.
+//' # Simulation should stop after the 5-th bounce or at tmax=10 s which ever comes first.
+//' # This example illustrates usage of root finding and handling.
+//' # We decide to implement callback functions in C++.
 //' yv=c(x=0, y=5, vx=1, vy=0) # initial state vector
 //' pv=c(g=9.81, k_r=0.1, k=0.9, nbounce=5) # parameter vector
 //' ti=seq(0, 10, length.out=201L) # time grid
@@ -113,7 +121,8 @@
 //'   ydot[3] = -p["g"] - p["k_r"]*y[3]; // vy′=-g -k_r*vy
 //'   return(CV_SUCCESS);
 //' }
-//' ', depends=c("RcppArmadillo","r2sundials","rmumps"), includes="using namespace arma;\n#include <r2sundials.h>", cacheDir="lib", verbose=FALSE)
+//' ', depends=c("RcppArmadillo","r2sundials","rmumps"),
+//'  includes="using namespace arma;\n#include <r2sundials.h>", cacheDir="lib", verbose=FALSE)
 //' 
 //' # root function
 //' ptr_ball_root=cppXPtr(code='
@@ -121,14 +130,16 @@
 //'   vroot[0] = y[1]; // y==0
 //'   return(0);
 //' }
-//' ', depends=c("RcppArmadillo","r2sundials","rmumps"), includes="using namespace arma;\n#include <r2sundials.h>", cacheDir="lib", verbose=FALSE)
+//' ', depends=c("RcppArmadillo","r2sundials","rmumps"),
+//'  includes="using namespace arma;\n#include <r2sundials.h>", cacheDir="lib", verbose=FALSE)
 //' 
 //' # event handler function
 //' ptr_ball_event=cppXPtr(code='
-//' int event_ball(double t, const vec &y, vec &ynew, ivec &rootsfound, RObject &param, NumericVector &psens) {
+//' int event_ball(double t, const vec &y, vec &ynew, ivec &rootsfound,
+//'                RObject &param, NumericVector &psens) {
 //'   NumericVector p(param);
 //'   static int nbounce=0;
-//'   if (rootsfound[0] > 0) // we cross 0 in ascending trajectory, it can happen when y < 0 in limits of abstol
+//'   if (rootsfound[0] > 0) //cross 0 by ascending, can happen when y < 0 in limits of abstol
 //'     return(R2SUNDIALS_EVENT_IGNORE);
 //'   ynew=y;
 //'   if (++nbounce < p["nbounce"]) {
@@ -142,18 +153,21 @@
 //'     return(R2SUNDIALS_EVENT_STOP);
 //'   }
 //' }
-//' ', depends=c("RcppArmadillo","r2sundials","rmumps"), includes="using namespace arma;\n#include <r2sundials.h>", cacheDir="lib", verbose=FALSE)
+//' ', depends=c("RcppArmadillo","r2sundials","rmumps"),
+//'  includes="using namespace arma;\n#include <r2sundials.h>", cacheDir="lib", verbose=FALSE)
 //'
 //' # ODE solving and plotting
-//' res_ball <- r2sundials::cvodes(yv, ti, ptr_ball, param=pv, integrator=CV_ADAMS, nroot=1, froot=ptr_ball_root, fevent=ptr_ball_event)
+//' res_ball <- r2sundials::cvodes(yv, ti, ptr_ball, param=pv, nroot=1,
+//'   froot=ptr_ball_root, fevent=ptr_ball_event)
 //' plot(res_ball["x",], res_ball["y",], t="l", main="Bouncing ball simulation")
 //' 
 //' # Ex.4. Robertson chemical reactions
-//' # This example is often used as an illustration and a benchmark for stiff ODE. We will demonstrate here 
-//' # • how to use sparse Jacobian (not really meaningfull for 3x3 sytem but just to give a sample);
-//' # • how to make sensitivity calculations.
+//' # This example is often used as an illustration and a benchmark for stiff ODE.
+//' # We will demonstrate here:
+//' # • how to use sparse Jacobian (not really meaningfull for 3x3 sytem but just to give a hint);
+//' # • how to make sensitivity calculations with user provided rhs.
 //' #
-//' # Simulate the following chemical system of 3 compounds y1, y2 and y3
+//' # Let simulate the following chemical system of 3 compounds y1, y2 and y3
 //' #  y1′ = -k1*y1 + k3*y2*y3
 //' #  y2′ =  k1*y1 - k2*y2*y2 - k3*y2*y3
 //' #  y3′ =  k2*y2*y2
@@ -179,13 +193,14 @@
 //'   ydot[1] = -ydot[0] - ydot[2];
 //'   return(CV_SUCCESS);
 //' }
-//' ', depends=c("RcppArmadillo","r2sundials","rmumps"), includes="using namespace arma;\n#include <r2sundials.h>", cacheDir="lib", verbose=FALSE)
+//' ', depends=c("RcppArmadillo","r2sundials","rmumps"),
+//'  includes="using namespace arma;\n#include <r2sundials.h>", cacheDir="lib", verbose=FALSE)
 //' # pointer to sparse jacobian function
 //' ptr_rob_jacsp=cppXPtr(code='
 //' int spjac_rob(double t, const vec &y, vec &ydot, uvec &ir, uvec &pj, vec &v, int n, int nz,
 //'               RObject &param, NumericVector &psens) {
 //'   if (nz < 8)
-//'     stop("spjac_robertson: not enough room for non zeros, must have at least 8, instead got %d", nz);
+//'     stop("spjac_rob: not enough room for non zeros, must have at least 8, instead got %d", nz);
 //'   NumericVector p(param);
 //'   int i=0;
 //'   pj[0] = 0; // init pj
@@ -213,10 +228,12 @@
 //'   pj[3] = i;
 //'   return(0);
 //' }
-//' ', depends=c("RcppArmadillo","r2sundials","rmumps"), includes="using namespace arma;\n#include <r2sundials.h>", cacheDir="lib", verbose=FALSE)
+//' ', depends=c("RcppArmadillo","r2sundials","rmumps"),
+//'  includes="using namespace arma;\n#include <r2sundials.h>", cacheDir="lib", verbose=FALSE)
 //' # pointer to sensitivity rhs function
 //' ptr_rob_sens1=cppXPtr(code='
-//' int sens_rob1(int Ns, double t, const vec &y, vec &ydot, int iS, vec &yS, vec &ySdot, RObject &param, NumericVector &psens, vec &tmp1, vec &tmp2) {
+//' int sens_rob1(int Ns, double t, const vec &y, vec &ydot, int iS, vec &yS, vec &ySdot,
+//'               RObject &param, NumericVector &psens, vec &tmp1, vec &tmp2) {
 //'   // calculate (∂f /∂y)s_i(t) + (∂f /∂p_i) for i = iS
 //'   NumericVector p(param);
 //'   // (∂f/∂y)s_i(t)
@@ -239,9 +256,11 @@
 //'   }
 //'   return(CV_SUCCESS);
 //' }
-//' ', depends=c("RcppArmadillo","r2sundials","rmumps"), includes="using namespace arma;\n#include <r2sundials.h>", cacheDir="lib", verbose=FALSE)
+//' ', depends=c("RcppArmadillo","r2sundials","rmumps"),
+//'  includes="using namespace arma;\n#include <r2sundials.h>", cacheDir="lib", verbose=FALSE)
 //' # Note that we don't use psens param for sensitivity calculations as we provide our own fsens1.
-//' res_rob <- r2sundials::cvodes(yv, ti, ptr_rob, param=pv, nz=8, fjac=ptr_rob_jacsp, Ns=3, fsens1=ptr_rob_sens1)
+//' res_rob <- r2sundials::cvodes(yv, ti, ptr_rob, param=pv, nz=8, fjac=ptr_rob_jacsp, Ns=3,
+//'                               fsens1=ptr_rob_sens1)
 //' # plot ODE solution
 //' layout(t(1:3)) # three sublots in a row
 //' for (i in 1:3)

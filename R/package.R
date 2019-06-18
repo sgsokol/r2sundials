@@ -1,14 +1,3 @@
-#' r2sundials
-#'
-#' Rcpp wrapper for SUNDIALS CVODE C code solving ordinary differential
-#'
-#' @docType package
-#' @author Serguei Sokol
-#' @import Rcpp RcppArmadillo
-#' @importFrom Rcpp sourceCpp
-#' @useDynLib r2sundials
-#' @name r2sundials
-NULL
 # set useful constants
 cnsts=c(
    "CV_SUCCESS",
