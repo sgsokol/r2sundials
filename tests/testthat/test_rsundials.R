@@ -41,9 +41,9 @@ int d_robertson(double t, const vec &y, vec &ydot, RObject &param, NumericVector
   ydot[0] = -p["k1"]*y[0] + p["k3"]*y[1]*y[2];
   ydot[2] = p["k2"]*y[1]*y[1];
   ydot[1] = -ydot[0] - ydot[2];
-  return(0);
+  return(CV_SUCCESS);
 }
-', depends="RcppArmadillo", includes=includes, cacheDir="lib", verbose=FALSE)
+', depends="RcppArmadillo,r2sundials,rmumps", includes=includes, cacheDir="lib", verbose=FALSE)
 # pointer to dense jacobian function
 pfnj=cppXPtr(code='
 int jac_robertson(double t, const vec &y, vec &ydot, mat &J, RObject &param, NumericVector &psens) {
@@ -124,19 +124,19 @@ int sens_robertson1(int Ns, double t, const vec &y, vec &ydot, int iS, vec &yS, 
 
 # just rhs
 #print (system.time(
-#out0 <- rsundials::cvodes(yini, times, pfnd, param=parms)
+#out0 <- r2sundials::cvodes(yini, times, pfnd, param=parms)
 #))
 
 #print (system.time(
-#out1 <- rsundials::cvodes(yini, times, pfnd, param=parms, fjac=pfnspj, nz=8)
+#out1 <- r2sundials::cvodes(yini, times, pfnd, param=parms, fjac=pfnspj, nz=8)
 #))
 # sparse Jacobian
 #print (system.time(
-#out1 <- rsundials::cvodes(yini, times, pfnd, param=parms, fjac=pfnspj, nz=8)
+#out1 <- r2sundials::cvodes(yini, times, pfnd, param=parms, fjac=pfnspj, nz=8)
 #))
 # dense Jacobian + forward sensitivity 1 by 1
 #print (system.time(
-#out2 <- rsundials::cvodes(yini, times, pfnd, param=parms, fjac=pfnj, Ns=3, psens=parms, fsens1=pfnsens1)
+#out2 <- r2sundials::cvodes(yini, times, pfnd, param=parms, fjac=pfnj, Ns=3, psens=parms, fsens1=pfnsens1)
 #))
 
 # bouncing ball example (to illustrate discontinuties handling)
@@ -166,27 +166,27 @@ int root_ball(double t, const vec &y, vec &vroot, RObject &param) {
 }
 ', depends="RcppArmadillo", includes=includes, cacheDir="lib", verbose=FALSE)
 # pointer to event handler function
-Sys.setenv(PKG_CXXFLAGS="-I/home/sokol/dev/R/rcpp-pkgs/rsundials/inst/include")
+Sys.setenv(PKG_CXXFLAGS="-I/home/sokol/dev/R/rcpp-pkgs/r2sundials/inst/include")
 pevt=cppXPtr(code='
 int event_ball(double t, const vec &y, vec &ynew, ivec &rootsfound, RObject &param, NumericVector &psens) {
   NumericVector p(param);
   static int nbounce=0;
   if (y[3] > 0) // we cross 0 in ascending trajectory, it can happen when y < 0 in limits of abstol
-    return(RSUNDIALS_EVENT_IGNORE);
+    return(r2sundials_EVENT_IGNORE);
   ynew=y;
   if (++nbounce < p["nbounce"]) {
     // here nbounce=1:4
     ynew[2] *= 1.-p["kx"]; // horizontal speed is lowered
     ynew[3] *= -(1.-p["ky"]); // vertical speed is lowered and reflected
-    return(RSUNDIALS_EVENT_HOLD);
+    return(r2sundials_EVENT_HOLD);
   } else {
     // here nbounce=5
     nbounce=0; // reinit counter for possible next calls to cvode
-    return(RSUNDIALS_EVENT_STOP);
+    return(r2sundials_EVENT_STOP);
   }
 }
-', depends=c("RcppArmadillo", "rmumps"), includes=paste0(includes, "\n#include <rsundials.h>"), cacheDir="lib", verbose=FALSE)
-#outb <- rsundials::cvodes(yinib, timesb, pball, paramb, nroot=1, froot=proot, fevent=pevt)
+', depends=c("RcppArmadillo", "rmumps"), includes=paste0(includes, "\n#include <r2sundials.h>"), cacheDir="lib", verbose=FALSE)
+#outb <- r2sundials::cvodes(yinib, timesb, pball, paramb, nroot=1, froot=proot, fevent=pevt)
 #class(outb)=class(out); plot(outb)
 
 rhs_ball_r=function(t, y, p, psens) {
@@ -202,22 +202,22 @@ event_ball_r=local({
   nbounce=0 # workaround for static variable
   function(t, y, rootsfound, p, psens) {
     if (y[4] > 0) # we cross 0 in ascending trajectory, it can happen when y < 0 in limits of abstol
-      return(list(flag=RSUNDIALS_EVENT_IGNORE, ynew=y))
+      return(list(flag=r2sundials_EVENT_IGNORE, ynew=y))
     nbounce <<- nbounce + 1
     ynew=y;
     if (nbounce < p["nbounce"]) {
       # here nbounce=1:4
       ynew[3] = ynew[3]*(1.-p["kx"]) # horizontal speed is lowered
       ynew[4] = -ynew[4]*(1.-p["ky"]) # vertical speed is lowered and reflected
-      return(list(flag=RSUNDIALS_EVENT_HOLD, ynew=ynew))
+      return(list(flag=r2sundials_EVENT_HOLD, ynew=ynew))
     } else {
       # here nbounce=5
       nbounce <<- 0 # reinit counter for possible next calls to cvode
-      return(list(flag=RSUNDIALS_EVENT_STOP, ynew=ynew))
+      return(list(flag=r2sundials_EVENT_STOP, ynew=ynew))
     }
   }
 })
-#system.time(outbr <- rsundials::cvodes(yinib, timesb, rhs_ball_r, paramb, nroot=1, froot=root_ball_r, fevent=event_ball_r))
+#system.time(outbr <- r2sundials::cvodes(yinib, timesb, rhs_ball_r, paramb, nroot=1, froot=root_ball_r, fevent=event_ball_r))
 #class(outbr)=class(out); plot(outbr)
 
 # decaying exp example
@@ -230,5 +230,5 @@ int d_exp(double t, const vec &y, vec &ydot, RObject &param, NumericVector &psen
 }
 ', depends="RcppArmadillo", includes=includes, cacheDir="lib", verbose=FALSE)
 par_exp=c("nu"=1, "lim"=1)
-#system.time(oute <- rsundials::cvodes(0., seq(0, 5, length.out=11), pexp, Ns=2, psens=par_exp))
+#system.time(oute <- r2sundials::cvodes(0., seq(0, 5, length.out=11), pexp, Ns=2, psens=par_exp))
 #class(oute)=class(out); plot(oute)

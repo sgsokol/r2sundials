@@ -5,6 +5,6 @@ library(RcppXPtrUtils)
 library(deSolve)
 library(slam)
 library(RcppXPtrUtils)
-library(rsundials)
+library(r2sundials)
 
-test_check("rsundials")
+test_check("r2sundials")

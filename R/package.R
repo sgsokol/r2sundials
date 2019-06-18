@@ -1,4 +1,4 @@
-#' rsundials
+#' r2sundials
 #'
 #' Rcpp wrapper for SUNDIALS CVODE C code solving ordinary differential
 #'
@@ -6,17 +6,17 @@
 #' @author Serguei Sokol
 #' @import Rcpp RcppArmadillo
 #' @importFrom Rcpp sourceCpp
-#' @useDynLib rsundials
-#' @name rsundials
+#' @useDynLib r2sundials
+#' @name r2sundials
 NULL
 # set useful constants
 cnsts=c(
    "CV_SUCCESS",
    "CV_BDF",
    "CV_ADAMS",
-   "RSUNDIALS_EVENT_IGNORE",
-   "RSUNDIALS_EVENT_HOLD",
-   "RSUNDIALS_EVENT_STOP",
+   "R2SUNDIALS_EVENT_IGNORE",
+   "R2SUNDIALS_EVENT_HOLD",
+   "R2SUNDIALS_EVENT_STOP",
    "CV_SIMULTANEOUS",
    "CV_STAGGERED",
    "CV_STAGGERED1"

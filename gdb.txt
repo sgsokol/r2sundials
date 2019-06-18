@@ -1,0 +1,53 @@
+# commands useful for gdb session
+ p (( _SUNMatrixContent_Sparse *) A.content)->data[0]
+ watch *(double*)(( _SUNMatrixContent_Sparse *) A.content)->data
+ Rf_PrintValue(wrap(my_int))
+p ((N_VectorContent_Serial) nv_y.content)->data
+p ((N_VectorContent_Serial) yS[0].content)->data
+struct _SUNMatrixContent_Sparse {
+sunindextype M;
+sunindextype N;
+sunindextype NNZ;
+sunindextype NP;
+realtype *data;
+int sparsetype;
+sunindextype *indexvals;
+sunindextype *indexptrs;
+/* CSC indices */
+sunindextype **rowvals;
+sunindextype **colptrs;
+/* CSR indices */
+sunindextype **colvals;
+sunindextype **rowptrs;
+};
+
+# to print SEXP type
+(gdb) p integrator
+$2 = {m_sexp = 0x25a0338, m_set = true}
+
+(gdb) call (void) Rf_PrintValue(0x25a0338)
+[1] 2
+
+
+# R start commands
+library(testthat)
+library(Rcpp)
+library(RcppArmadillo)
+library(RcppXPtrUtils)
+library(deSolve)
+library(slam)
+library(devtools)
+load_all("r2sundials")
+source("r2sundials/tests/testthat/test_r2sundials.R")
+
+#ctrl-c -> gdb
+b SUNLinSol_RMUMPS
+c
+
+# R
+system.time(out0 <- r2sundials::cvodes(yini, times, pfnd, parms))
+system.time(outs <- r2sundials::cvodes(yini, times, pfnd, parms, fjac=pfnj, Ns=3, psens=parms, fsens1=pfnsens1))
+system.time(out1 <- r2sundials::cvodes(yini, times, pfnd, parms, fjac=pfnspj, nz=8))
+system.time(outb <- r2sundials::cvodes(yinib, timesb, pball, paramb, nroot=1, froot=proot, fevent=pevt))
+system.time(outbr <- r2sundials::cvodes(yinib, timesb, rhs_ball_r, paramb, nroot=1, froot=root_ball_r, fevent=event_ball_r))
+system.time(oute <- r2sundials::cvodes(0., seq(0, 5, length.out=11), pexp, Ns=2, psens=par_exp))

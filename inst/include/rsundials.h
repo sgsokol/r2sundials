@@ -1,5 +1,5 @@
-#ifndef RSUNDIALS_H
-#define RSUNDIALS_H
+#ifndef R2SUNDIALS_H
+#define R2SUNDIALS_H
 
 #include <cvodes/cvodes.h> // prototypes for CVODE fcts., consts.
 #include <nvector/nvector_serial.h> // access to serial N_Vector
@@ -8,9 +8,9 @@
 #include <sunmatrix/sunmatrix_sparse.h> // access to sparse SUNMatrix
 #include <sundials/sundials_types.h> // defs. of realtype, sunindextype
 
-#define RSUNDIALS_EVENT_IGNORE 0
-#define RSUNDIALS_EVENT_HOLD 1
-#define RSUNDIALS_EVENT_STOP -1
+#define R2SUNDIALS_EVENT_IGNORE 0
+#define R2SUNDIALS_EVENT_HOLD 1
+#define R2SUNDIALS_EVENT_STOP -1
 
 #include <sunlinsol_rmumps.h>
 
@@ -20,7 +20,7 @@ using namespace Rcpp;
 using namespace arma;
 
 #define getmem(y, f) {(y)=(f); if ((y) == NULL) stop("no memory for " #y);}
-#define check_retval(expr) {int retval=(expr); if (retval != CV_SUCCESS) stop("rsundials: call: %s\nraised flag: %s", #expr, CVodeGetReturnFlagName(retval));}
+#define check_retval(expr) {int retval=(expr); if (retval != CV_SUCCESS) stop("r2sundials: call: %s\nraised flag: %s", #expr, CVodeGetReturnFlagName(retval));}
 
 typedef struct {
   NumericVector psens;

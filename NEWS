@@ -1,0 +1,5 @@
+Version 4.1.0-1
+===============
+
+* 2019-06-17
+ - first release. It includes cvodes() for ODE and optionally sensitivity problem solving

@@ -1,12 +1,16 @@
-Package: rsundials
+Package: r2sundials
 Type: Package
-Title: Rcpp wrapper for SUNDIALS CVODE C code solving ordinary differential equations
+Title: Rcpp Wrapper for SUNDIALS CVODES Solving Ordinary Differential Equations and Forward Sensitivity System
 Version: 4.1.0-1
-Date: 2019-02-27
+Date: 2019-06-17
 Author: Serguei Sokol
-Maintainer: <serguei.sokol@gmail.com>
-Description: Interface for commonly used SUNDIALS library for solving ODE equations is made R friendly by allowing to pass custom parameters to user RHS function. This latter can be both written in R and in C++ (Rcpp flavor). In case of C++, performance is greatly improved so this option is highly advisable. Jacobian can be specified as either dense or sparse matrix. In the latter case rmumps package is used to solve corresponding linear systems. Root finding (i.e. event management) is optional and can be too specified as R or C++ function.
-License: BSD
-Imports: Rcpp (>= 1.0.0)
+Maintainer: Serguei Sokol <serguei.sokol@gmail.com>
+Description: Wrapper for wildly used SUNDIALS cvodes function aiming to solve ODE system and optionally pending sensitivity problem. The wrapper is made R friendly by allowing to pass custom parameters to user's callback functions. Such functions can be both written in R and in C++ (Rcpp flavor). In case of C++, performance is greatly improved so this option is highly advisable when performance matters. Jacobian matrix can be provided by user as either in dense or sparse format. In the latter case rmumps package is used to solve corresponding linear systems. Root finding and corresponding event management are optional and can be specified as R or C++ functions too. This makes them a very flexible tool for controlling the ODE system during the time course simulation.
+Depends: R (>= 3.0.2)
+License: GPL (>=2)
+Imports: Rcpp (>= 1.0.0), RcppArmadillo
 LinkingTo: Rcpp, RcppArmadillo, rmumps (>= 5.1.2-6)
-Suggests: RcppXPtrUtils
+Suggests: RcppXPtrUtils, slam, testthat
+SystemRequirements: SUNDIALS cvodes (>= 4.1.0), GNU Make
+RoxygenNote: 6.1.1
+Encoding: UTF-8
