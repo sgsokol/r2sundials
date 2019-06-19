@@ -1,10 +1,6 @@
 library(testthat)
-library(Rcpp)
-library(RcppArmadillo)
 library(RcppXPtrUtils)
-library(deSolve)
 library(slam)
-library(RcppXPtrUtils)
 library(r2sundials)
 
 test_check("r2sundials")

@@ -35,7 +35,7 @@ Maintainer: \packageMaintainer{r2sundials}
 \keyword{ ODE }
 \keyword{ sensitivity }
 \seealso{
- \code{\link[deSolve:deSolve-package]{deSolve}} ~~
+ \code{\link[deSolve:deSolve-package]{deSolve}}
 }
 \examples{
   # a very simple ODE for exponential trasition from 0 to 1: y′=1-y, y(0)=0
