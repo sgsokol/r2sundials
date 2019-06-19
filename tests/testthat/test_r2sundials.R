@@ -184,8 +184,8 @@ int event_ball(double t, const vec &y, vec &ynew, ivec &rootsfound, RObject &par
     return(R2SUNDIALS_EVENT_STOP);
   }
 }
-', depends=c("RcppArmadillo", "rmumps"), includes=includes, cacheDir="lib", verbose=FALSE)
-#outb <- r2sundials::cvodes(yinib, timesb, pball, paramb, nroot=1, froot=proot, fevent=pevt)
+', depends=c("RcppArmadillo", "r2sundials", "rmumps"), includes=includes, cacheDir="lib", verbose=FALSE)
+outb <- r2sundials::cvodes(yinib, timesb, pball, paramb, nroot=1, froot=proot, fevent=pevt)
 #class(outb)=class(out); plot(outb)
 
 rhs_ball_r=function(t, y, p, psens) {
@@ -231,5 +231,7 @@ int d_exp(double t, const vec &y, vec &ydot, RObject &param, NumericVector &psen
 }
 ', depends=c("RcppArmadillo","r2sundials","rmumps"), includes=includes, cacheDir="lib", verbose=FALSE)
 par_exp=c("nu"=1, "lim"=1)
-#system.time(oute <- r2sundials::cvodes(0., seq(0, 5, length.out=11), pexp, Ns=2, psens=par_exp))
+#system.time(
+oute <- r2sundials::cvodes(0., seq(0, 5, length.out=11), pexp, Ns=2, psens=par_exp)
+#)
 #class(oute)=class(out); plot(oute)
