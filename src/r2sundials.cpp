@@ -162,7 +162,8 @@
 //' # ODE solving and plotting
 //' res_ball <- r2sundials::cvodes(yv, ti, ptr_ball, param=pv, nroot=2L,
 //'   froot=ptr_ball_root, fevent=ptr_ball_event)
-//' plot(res_ball["x",], res_ball["y",], xlab="X [m]", ylab="Y [m]", t="l", main="Bouncing ball simulation")
+//' plot(res_ball["x",], res_ball["y",], xlab="X [m]", ylab="Y [m]",
+//'   t="l", main="Bouncing ball simulation")
 //' 
 //' # Ex.4. Robertson chemical reactions
 //' # This example is often used as an illustration and a benchmark for stiff ODE.

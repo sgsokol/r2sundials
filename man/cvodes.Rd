@@ -208,7 +208,8 @@ int event_ball(double t, const vec &y, vec &ynew, ivec &rootsfound,
 # ODE solving and plotting
 res_ball <- r2sundials::cvodes(yv, ti, ptr_ball, param=pv, nroot=2L,
   froot=ptr_ball_root, fevent=ptr_ball_event)
-plot(res_ball["x",], res_ball["y",], t="l", main="Bouncing ball simulation")
+plot(res_ball["x",], res_ball["y",], xlab="X [m]", ylab="Y [m]",
+  t="l", main="Bouncing ball simulation")
 
 # Ex.4. Robertson chemical reactions
 # This example is often used as an illustration and a benchmark for stiff ODE.
@@ -319,5 +320,5 @@ layout(matrix(1:9, nrow=3)) # 9 subplots in a square
 for (j in 1:3) # run through pv
    for (i in 1:3) # run through y
       plot(ti, attr(res_rob, "sens")[i,,j], log="x", t="l", xlab="Time",
-           ylab=parse(text=paste0("partialdiff*y[", i, "]/partialdiff*k[", j, "])"))
+           ylab=parse(text=paste0("partialdiff*y[", i, "]/partialdiff*k[", j, "]")))
 }

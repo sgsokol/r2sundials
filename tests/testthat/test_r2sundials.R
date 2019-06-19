@@ -48,17 +48,17 @@ int d_robertson(double t, const vec &y, vec &ydot, RObject &param, NumericVector
 pfnj=cppXPtr(code='
 int jac_robertson(double t, const vec &y, vec &ydot, mat &J, RObject &param, NumericVector &psens) {
   NumericVector p(param);
-  J[0, 0] = -p["k1"];
-  J[1, 0] = p["k1"]; 
-  J[2, 0] = 0.;
+  J(0, 0) = -p["k1"];
+  J(1, 0) = p["k1"]; 
+  J(2, 0) = 0.;
 
-  J[0, 1] = p["k3"]*y[2];
-  J[1, 1] = -p["k3"]*y[2]-2*p["k2"]*y[1];
-  J[2, 1] = 2*p["k2"]*y[1];
+  J(0, 1) = p["k3"]*y[2];
+  J(1, 1) = -p["k3"]*y[2]-2*p["k2"]*y[1];
+  J(2, 1) = 2*p["k2"]*y[1];
 
-  J[0, 2] = p["k3"]*y[1];
-  J[1, 2] = -p["k3"]*y[1];
-  J[2, 2] = 0.;
+  J(0, 2) = p["k3"]*y[1];
+  J(1, 2) = -p["k3"]*y[1];
+  J(2, 2) = 0.;
   return(CV_SUCCESS);
 }
 ', depends=c("RcppArmadillo","r2sundials","rmumps"), includes=includes, cacheDir="lib", verbose=FALSE)
@@ -129,9 +129,6 @@ int sens_robertson1(int Ns, double t, const vec &y, vec &ydot, int iS, vec &yS, 
 out0 <- r2sundials::cvodes(yini, times, pfnd, param=parms)
 #))
 
-#print (system.time(
-out1 <- r2sundials::cvodes(yini, times, pfnd, param=parms, fjac=pfnspj, nz=8)
-#))
 # sparse Jacobian
 #print (system.time(
 out1 <- r2sundials::cvodes(yini, times, pfnd, param=parms, fjac=pfnspj, nz=8)
@@ -220,7 +217,8 @@ event_ball_r=local({
   }
 })
 #system.time(
-outbr <- r2sundials::cvodes(yinib, timesb, rhs_ball_r, paramb, nroot=1, froot=root_ball_r, fevent=event_ball_r))
+outbr <- r2sundials::cvodes(yinib, timesb, rhs_ball_r, paramb, nroot=1, froot=root_ball_r, fevent=event_ball_r)
+#)
 #class(outbr)=class(out); plot(outbr)
 
 # decaying exp example
