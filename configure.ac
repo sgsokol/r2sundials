@@ -14,8 +14,8 @@ CXXFLAGS=`"${R_HOME}/bin/R" CMD config CXX11FLAGS`
 AC_LANG(C++)
 
 # config cvodes header path
-AC_ARG_WITH([cvodes-include],
-            AC_HELP_STRING([--with-cvodes-include=CVODES_INCLUDE_DIR],
+AC_ARG_WITH([cvodes_include],
+            AC_HELP_STRING([--with_cvodes_include=CVODES_INCLUDE_DIR],
                            [the location of CVODES header files, where cvodes/cvodes.h resides (default /usr/local/include)]),
             [cvodes_include=$withval])
 CVODES_INCLUDE=""
@@ -31,16 +31,16 @@ fi
 
 dnl Check the headers can be found
 SAVE_CPPFLAGS=$CPPFLAGS
-CPPFLAGS="$CPPFLAGS -I$CVODES_INCLUDE/cvodes"
-AC_CHECK_HEADERS([cvodes.h])
+CPPFLAGS="$CPPFLAGS -I$CVODES_INCLUDE"
+AC_CHECK_HEADERS([cvodes/cvodes.h])
 CPPFLAGS=$SAVE_CPPFLAGS
 if test "${ac_cv_header_cvodes_h}" = no; then
    AC_MSG_ERROR("CVODES header cvodes.h not found")
 fi
 
 # config cvodes lib path
-AC_ARG_WITH([cvodes-libs],
-            AC_HELP_STRING([--with-cvodes-libs=CVODES_LIBS_DIR],
+AC_ARG_WITH([cvodes_libs],
+            AC_HELP_STRING([--with_cvodes_libs=CVODES_LIBS_DIR],
                            [the location of CVODES libraries, where libsundials_cvodes.so resides (default /usr/local/lib64)]),
             [cvodes_libs=$withval])
 CVODES_LIBS=""
@@ -56,5 +56,5 @@ fi
 
 AC_SUBST(CVODES_INCLUDE)
 AC_SUBST(CVODES_LIBS)
-AC_CONFIG_FILES([src/Makevars])
+AC_CONFIG_FILES([src/Makevars src/Makevars.win inst/cvodes.txt])
 AC_OUTPUT

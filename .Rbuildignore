@@ -2,3 +2,6 @@ todo.txt
 gdb.txt
 NAMESPACE.empty
 NAMESPACE.save
+configure.win.patch
+^\.git.*$
+^autom.*$

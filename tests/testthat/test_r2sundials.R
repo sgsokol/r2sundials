@@ -1,3 +1,5 @@
+cvodes=readLines(file.path(path.package("r2sundials"), "cvodes.txt"))
+Sys.setenv(PKG_CXXFLAGS=paste0("-I", gsub("\\", "/", cvodes[1L], fixed=TRUE)))
 context("Robertson")
 yini <- c(y1=1, y2=0, y3=0)
 neq=length(yini)
@@ -126,6 +128,7 @@ int sens_robertson1(int Ns, double t, const vec &y, vec &ydot, int iS, vec &yS, 
 
 # just rhs
 #print (system.time(
+outr <- r2sundials::cvodes(yini, times, r_rober, param=parms)
 out0 <- r2sundials::cvodes(yini, times, pfnd, param=parms)
 #))
 
@@ -165,7 +168,6 @@ int root_ball(double t, const vec &y, vec &vroot, RObject &param) {
 }
 ', depends=c("RcppArmadillo","r2sundials","rmumps"), includes=includes, cacheDir="lib", verbose=FALSE)
 # pointer to event handler function
-#Sys.setenv(PKG_CXXFLAGS="-I/home/sokol/dev/R/rcpp-pkgs/r2sundials/inst/include")
 pevt=cppXPtr(code='
 int event_ball(double t, const vec &y, vec &ynew, ivec &rootsfound, RObject &param, NumericVector &psens) {
   NumericVector p(param);

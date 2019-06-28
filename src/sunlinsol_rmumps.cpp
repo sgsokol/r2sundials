@@ -1,18 +1,14 @@
 #include <sundials/sundials_math.h>
 #include <sunlinsol_rmumps.h>
-
 // exported functions
 
 // Function to create a new RMUMPS linear solver
-SUNLinearSolver SUNLinSol_RMUMPS(N_Vector y, SUNMatrix A, int  permutation=RMUMPS_PERM_AUTO)
-{
+SUNDIALS_EXPORT SUNLinearSolver SUNLinSol_RMUMPS(N_Vector y, SUNMatrix A, int  permutation=RMUMPS_PERM_AUTO) {
 //Rcout << "call SUNLinSol_RMUMPS\n";
 //Rcout << "permutation=" << permutation << "\n";
   SUNLinearSolver S;
   SUNLinearSolver_Ops ops;
   SUNLinearSolverContent_RMUMPS content;
-  sunindextype MatrixRows, VecLength;
-  int flag;
   
   // Check compatibility with supplied SUNMatrix and N_Vector
   if (SUNMatGetID(A) != SUNMATRIX_SPARSE)
@@ -99,13 +95,13 @@ print(asl["nrow"]);
  * -----------------------------------------------------------------
  */
 
-SUNLinearSolver_Type SUNLinSolGetType_RMUMPS(SUNLinearSolver S)
+SUNDIALS_EXPORT SUNLinearSolver_Type SUNLinSolGetType_RMUMPS(SUNLinearSolver S)
 {
   return(SUNLINEARSOLVER_DIRECT);
 }
 
 
-int SUNLinSolInitialize_RMUMPS(SUNLinearSolver S)
+SUNDIALS_EXPORT int SUNLinSolInitialize_RMUMPS(SUNLinearSolver S)
 {
 //Rcout << "call SUNLinSolInitialize_RMUMPS\n";
   LASTFLAG(S) = SUNLS_SUCCESS;
@@ -113,10 +109,9 @@ int SUNLinSolInitialize_RMUMPS(SUNLinearSolver S)
 }
 
 
-int SUNLinSolSetup_RMUMPS(SUNLinearSolver S, SUNMatrix A)
-{
+SUNDIALS_EXPORT int SUNLinSolSetup_RMUMPS(SUNLinearSolver S, SUNMatrix A) {
 //Rcout << "call SUNLinSolSetup_RMUMPS\n";
-  int retval, n=SM_COLUMNS_S(A), nzres=SM_NNZ_S(A); // nz reserved, it may be larger than real nz
+  int n=SM_COLUMNS_S(A); //nzres=SM_NNZ_S(A); // nz reserved, it may be larger than real nz
   // Ensure that A is a sparse matrix
   if (SUNMatGetID(A) != SUNMATRIX_SPARSE) {
     LASTFLAG(S) = SUNLS_ILL_INPUT;
@@ -171,9 +166,8 @@ print(asl["v"]);
   return(LASTFLAG(S));
 }
 
-int SUNLinSolSolve_RMUMPS(SUNLinearSolver S, SUNMatrix A, N_Vector x, 
-                       N_Vector b, realtype tol)
-{
+SUNDIALS_EXPORT int SUNLinSolSolve_RMUMPS(SUNLinearSolver S, SUNMatrix A, N_Vector x, 
+                       N_Vector b, realtype tol) {
 //Rcout << "call SUNLinSolSolve_RMUMPS\n";
 //static long clk_tck = CLOCKS_PER_SEC;
 //clock_t t1, t2;
@@ -226,14 +220,12 @@ vec(xdata, NV_LENGTH_S(x), false).print("b");
   return(LASTFLAG(S));
 }
 
-long int SUNLinSolLastFlag_RMUMPS(SUNLinearSolver S)
-{
+SUNDIALS_EXPORT long int SUNLinSolLastFlag_RMUMPS(SUNLinearSolver S) {
   // return the stored 'last_flag' value
   return(LASTFLAG(S));
 }
 
-int SUNLinSolFree_RMUMPS(SUNLinearSolver S)
-{
+SUNDIALS_EXPORT int SUNLinSolFree_RMUMPS(SUNLinearSolver S) {
 //Rcout << "call SUNLinSolFree_RMUMPS\n";
   // return with success if already freed
   if (S == NULL)

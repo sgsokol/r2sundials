@@ -38,7 +38,7 @@ Maintainer: \packageMaintainer{r2sundials}
  \code{\link[deSolve:deSolve-package]{deSolve}}
 }
 \examples{
-  # a very simple ODE for exponential trasition from 0 to 1: y′=1-y, y(0)=0
+  # a very simple ODE for exponential transition from 0 to 1: y'=1-y, y(0)=0
   frhs=function(t, y, param, psens) 1-y
   ti=seq(0, 5, length.out=101)
   y0=0
