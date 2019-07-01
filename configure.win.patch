@@ -22,11 +22,11 @@
    # already done that, so ensure we don't try to do so again and fall
 @@ -1311,11 +1311,11 @@
    --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
-   --with_cvodes_include=CVODES_INCLUDE_DIR
+   --with-cvodes_include=CVODES_INCLUDE_DIR
                            the location of CVODES header files, where
 -                          cvodes/cvodes.h resides (default /usr/local/include)
 +                          cvodes/cvodes.h resides (default %ProgramFiles%\cvodes\include)
-   --with_cvodes_libs=CVODES_LIBS_DIR
+   --with-cvodes_libs=CVODES_LIBS_DIR
                            the location of CVODES libraries, where
                            libsundials_cvodes.so resides (default
 -                          /usr/local/lib64)

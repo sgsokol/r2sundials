@@ -131,15 +131,26 @@ int sens_robertson1(int Ns, double t, const vec &y, vec &ydot, int iS, vec &yS, 
 outr <- r2sundials::cvodes(yini, times, r_rober, param=parms)
 out0 <- r2sundials::cvodes(yini, times, pfnd, param=parms)
 #))
-
+test_that("equivalence of R and C++ rhs callbacks", {
+  expect_equivalent(out0, outr, tolerance=1.e-6)
+})
 # sparse Jacobian
 #print (system.time(
 out1 <- r2sundials::cvodes(yini, times, pfnd, param=parms, fjac=pfnspj, nz=8)
 #))
+test_that("equivalence of solution with sparse Jacobian and no explicit Jacobian", {
+  expect_equivalent(out0, out1, tolerance=1.e-6)
+})
 # dense Jacobian + forward sensitivity 1 by 1
 #print (system.time(
 out2 <- r2sundials::cvodes(yini, times, pfnd, param=parms, fjac=pfnj, Ns=3, psens=parms, fsens1=pfnsens1)
 #))
+test_that("equivalence of solutions with sparse Jacobian and dense Jacobian", {
+  expect_equivalent(out2, out1, tolerance=1.e-6)
+})
+test_that("sensitivity", {
+  expect_equal(dim(attr(out2, "sens")), c(length(yini), length(times), 3))
+})
 
 # bouncing ball example (to illustrate discontinuties handling)
 # A ball falls from some height. At this moment, it has 0 vertical speed and some non zero horizontal speed.
@@ -169,7 +180,7 @@ int root_ball(double t, const vec &y, vec &vroot, RObject &param) {
 ', depends=c("RcppArmadillo","r2sundials","rmumps"), includes=includes, cacheDir="lib", verbose=FALSE)
 # pointer to event handler function
 pevt=cppXPtr(code='
-int event_ball(double t, const vec &y, vec &ynew, ivec &rootsfound, RObject &param, NumericVector &psens) {
+int event_ball(double t, const vec &y, vec &ynew, const int Ns, std::vector<vec> ySv, ivec &rootsfound, RObject &param, NumericVector &psens) {
   NumericVector p(param);
   static int nbounce=0;
   if (y[3] > 0) // we cross 0 in ascending trajectory, it can happen when y < 0 in limits of abstol
@@ -188,6 +199,10 @@ int event_ball(double t, const vec &y, vec &ynew, ivec &rootsfound, RObject &par
 }
 ', depends=c("RcppArmadillo", "r2sundials", "rmumps"), includes=includes, cacheDir="lib", verbose=FALSE)
 outb <- r2sundials::cvodes(yinib, timesb, pball, paramb, nroot=1, froot=proot, fevent=pevt)
+test_that("root finding", {
+  expect_equal(dim(attr(outb, "roots")), c(2, 5))
+})
+
 #class(outb)=class(out); plot(outb)
 
 rhs_ball_r=function(t, y, p, psens) {
@@ -199,9 +214,10 @@ rhs_ball_r=function(t, y, p, psens) {
   return(ydot)
 }
 root_ball_r=function(t, y, p, psens) y[2]
+
 event_ball_r=local({
   nbounce=0 # workaround for static variable
-  function(t, y, rootsfound, p, psens) {
+  function(t, y, Ns, ySm, rootsfound, p, psens) {
     if (y[4] > 0) # we cross 0 in ascending trajectory, it can happen when y < 0 in limits of abstol
       return(list(flag=R2SUNDIALS_EVENT_IGNORE, ynew=y))
     nbounce <<- nbounce + 1
@@ -210,7 +226,7 @@ event_ball_r=local({
       # here nbounce=1:4
       ynew[3] = ynew[3]*(1.-p["kx"]) # horizontal speed is lowered
       ynew[4] = -ynew[4]*(1.-p["ky"]) # vertical speed is lowered and reflected
-      return(list(flag=R2SUNDIALS_EVENT_HOLD, ynew=ynew))
+      return(list(flag=R2SUNDIALS_EVENT_HOLD, ynew=ynew))# sens_init is not set as no sensitivity is calculated
     } else {
       # here nbounce=5
       nbounce <<- 0 # reinit counter for possible next calls to cvode
@@ -222,6 +238,10 @@ event_ball_r=local({
 outbr <- r2sundials::cvodes(yinib, timesb, rhs_ball_r, paramb, nroot=1, froot=root_ball_r, fevent=event_ball_r)
 #)
 #class(outbr)=class(out); plot(outbr)
+test_that("root finding in R", {
+  expect_equivalent(outb, outbr)
+  expect_equal(dim(attr(outbr, "roots")), c(2, 5))
+})
 
 # decaying exp example
 # y'=-nu*(y-ylim)
@@ -233,7 +253,13 @@ int d_exp(double t, const vec &y, vec &ydot, RObject &param, NumericVector &psen
 }
 ', depends=c("RcppArmadillo","r2sundials","rmumps"), includes=includes, cacheDir="lib", verbose=FALSE)
 par_exp=c("nu"=1, "lim"=1)
+ti=seq(0, 5, length.out=11)
 #system.time(
-oute <- r2sundials::cvodes(0., seq(0, 5, length.out=11), pexp, Ns=2, psens=par_exp)
+oute <- r2sundials::cvodes(0., ti, pexp, Ns=2, psens=par_exp)
 #)
+test_that("numeric precision", {
+  theor=par_exp["lim"]-exp(-par_exp["nu"]*ti)
+  expect_equivalent(oute[1,], theor, tolerance=1.e-6)
+})
+
 #class(oute)=class(out); plot(oute)

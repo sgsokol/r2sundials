@@ -93,7 +93,7 @@ typedef int (*rsunRhsFn)(double t, const vec &y, vec &ydot, RObject &param, Nume
 typedef int (*rsunJacFn)(double t, const vec &y, vec &ydot, mat &J, RObject &param, NumericVector &psens, vec &tmp1, vec &tmp2, vec &tmp3);
 typedef int (*rsunSpJacFn)(double t, vec &y, vec &ydot, uvec &i, uvec &p, vec &v, int n, int nz, RObject &param, NumericVector &psens, vec &tmp1, vec &tmp2, vec &tmp3);
 typedef int (*rsunRootFn)(double t, const vec &y, vec &vroot, RObject &param, NumericVector &psens);
-typedef int (*rsunEventFn)(double t, const vec &y, vec &ynew, const ivec &rootsfound, RObject &param, NumericVector &psens);
+typedef int (*rsunEventFn)(double t, const vec &y, vec &ynew, const int Ns, std::vector<vec> &ySv, const ivec &rootsfound, RObject &param, NumericVector &psens);
 typedef int (*rsunSensFn)(int Ns, double t, const vec &yv, const vec &ydotv, const std::vector<vec> &ySv, const std::vector<vec> &ySdotv, RObject &param, NumericVector &psens, const vec &tmp1v, const vec &tmp2v);
 typedef int (*rsunSens1Fn)(int Ns, double t, const vec &yv, const vec &ydotv, int iS, const vec &ySv, const vec &ySdotv, RObject &param, NumericVector &psens, const vec &tmp1v, const vec &tmp2v);
 

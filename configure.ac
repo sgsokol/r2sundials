@@ -15,7 +15,7 @@ AC_LANG(C++)
 
 # config cvodes header path
 AC_ARG_WITH([cvodes_include],
-            AC_HELP_STRING([--with_cvodes_include=CVODES_INCLUDE_DIR],
+            AC_HELP_STRING([--with-cvodes_include=CVODES_INCLUDE_DIR],
                            [the location of CVODES header files, where cvodes/cvodes.h resides (default /usr/local/include)]),
             [cvodes_include=$withval])
 CVODES_INCLUDE=""
@@ -40,7 +40,7 @@ fi
 
 # config cvodes lib path
 AC_ARG_WITH([cvodes_libs],
-            AC_HELP_STRING([--with_cvodes_libs=CVODES_LIBS_DIR],
+            AC_HELP_STRING([--with-cvodes_libs=CVODES_LIBS_DIR],
                            [the location of CVODES libraries, where libsundials_cvodes.so resides (default /usr/local/lib64)]),
             [cvodes_libs=$withval])
 CVODES_LIBS=""
