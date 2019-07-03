@@ -1,8 +1,10 @@
 ## Introduction
 
-Package `r2sundials` is an Rcpp wrapper for a well known and wide spread
-library SUNDIALS from LLNL written in C. It provides an access from R to
-some basic features of `cvodes` routine from this library which include:
+Package `r2sundials` is an RcppArmadillo wrapper for a well known and
+wide spread library
+[SUNDIALS/CVODES](https://computation.llnl.gov/sites/default/files/public/cvs_guide.pdf)
+from LLNL written in C. It provides an access from R to some basic
+features of `cvodes` routine from this library which include:
 
   - solving user defined ODE via user provided functions calculating
     ODE’s right hand side (rhs);
@@ -70,10 +72,13 @@ However, prior to this, SUNDIALS CVODES library has to be installed on
 the user’s system and corresponding locations of include and library
 directories passed to installation routines. After downloading
 [sundials/cvodes](https://computation.llnl.gov/projects/sundials/download/cvodes-4.1.0.tar.gz),
-user has to configure and build it using cmake system. A mandatory
-configuration requirement is to set the index size to 32 bits. At the
-end of the configuration step, corresponding line in `CMakeCache.txt`
-file in the build directory must look like:
+user has to configure and build it using cmake system. It is highly
+advised to use the same compiler for compiling cvodes libraries as was
+used for compiling R itself. It can be detected with a command `R CMD
+config CC`. A mandatory configuration requirement for cvodes is to set
+the index size to 32 bits. At the end of the configuration step,
+corresponding line in `CMakeCache.txt` file in the build directory must
+look like:
 
 ``` 
  SUNDIALS_INDEX_SIZE:STRING=32
@@ -81,15 +86,15 @@ file in the build directory must look like:
 
 Failing to do so will result in no compilation of `r2sundials`. User can
 also to configure `cvodes` to use local BLAS/LAPACK libraries but this
-point is out of our scope. Let note installation directory of `cvodes`
-by `<cvodes_prefix>`.
+point is out of our scope.
 
 The rest of the installation procedure will be considered on two system
-types: Linux-like and Windows.
+types: Linux-like and Windows. Let note installation directory of
+`cvodes` by `<cvodes_prefix>`.
 
 ### Linux-like system
 
-Then user can install `r2sundials` with
+User can install `r2sundials` with
 
 ``` r
 install.packages("r2sundials", configure.args="--with-cvodes_include=<cvodes_prefix>/include --with-cvodes_libs=<cvodes_prefix>/lib")
@@ -135,18 +140,18 @@ install.packages("r2sundials")
 
 ### Version note
 
-`r2sundials` was developped and tested with CVODES version 4.1.0
-released on 2019-02-13. The versioning scheme of `r2sundials` is based
-on the version of CVODES itself extended with one number of
-`r2sundials`. For example, the first `r2sundials` release has the
-version 4.1.0-1.
+`r2sundials` was developed and tested with CVODES version 4.1.0 released
+on 2019-02-13. It can happen that `r2sundials` works with other versions
+of CVODES but it was not tested. The versioning scheme of `r2sundials`
+is based on the version of CVODES used during developments extended with
+one number proper to `r2sundials`. For example, the first `r2sundials`
+release has the version 4.1.0-1.
 
 ## Example
 
-Let solve a very simple ODE \(y'(t)=-\nu(y(t)-a)\), with \(\nu=2\),
-\(a=1\) and \(y(0)=0\) on a time interval \([0, 3]\). This equation
-describes an exponential transition between two states 0 and \(a\) with
-a rate \(nu\).
+Let solve a very simple ODE \(y'(t)=-ν(y(t)-a)\), with \(ν=2\), \(a=1\)
+and \(y(0)=0\) on a time interval \([0, 3]\). This equation describes an
+exponential transition between two states 0 and \(a\) with a rate \(ν\).
 
 With rhs written in R, we can do:
 
@@ -159,7 +164,7 @@ res=r2sundials::cvodes(y0, ti, frhs, param=p)
 stopifnot(diff(range(p["a"]-exp(-p["nu"]*ti) - res)) < 1.e-6)
 ```
 
-The same problem solved with Rcpp rhs can look like:
+The same problem solved with RcppArmadillo rhs can look like:
 
 ``` r
 library(RcppXPtrUtils)
