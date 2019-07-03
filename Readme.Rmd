@@ -108,12 +108,16 @@ Let solve a very simple ODE $y'(t)=-ν(y(t)-a)$, with $ν=2$, $a=1$ and $y(0)=0$
 
 With rhs written in R, we can do:
 ```{r}
+library(r2sundials)
 ti=seq(0, 3, length.out=101)
 p=c(nu=2, a=1)
 y0=0
 frhs=function(t, y, p, psens) -p["nu"]*(y-p["a"])
 res=r2sundials::cvodes(y0, ti, frhs, param=p)
+# compare with analytical solution
 stopifnot(diff(range(p["a"]-exp(-p["nu"]*ti) - res)) < 1.e-6)
+# see stats
+print(attr(res, "stats"))
 ```
 
 The same problem solved with RcppArmadillo rhs can look like:

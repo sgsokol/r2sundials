@@ -156,25 +156,40 @@ exponential transition between two states 0 and \(a\) with a rate \(ν\).
 With rhs written in R, we can do:
 
 ``` r
+library(r2sundials)
 ti=seq(0, 3, length.out=101)
 p=c(nu=2, a=1)
 y0=0
 frhs=function(t, y, p, psens) -p["nu"]*(y-p["a"])
 res=r2sundials::cvodes(y0, ti, frhs, param=p)
+# compare with analytical solution
 stopifnot(diff(range(p["a"]-exp(-p["nu"]*ti) - res)) < 1.e-6)
+# see stats
+print(attr(res, "stats"))
 ```
+
+    ##                   NumSteps                NumRhsEvals 
+    ##                        112                        136 
+    ##           NumLinSolvSetups            NumErrTestFails 
+    ##                         23                          3 
+    ##         NumNonlinSolvIters     NumNonlinSolvConvFails 
+    ##                        133                          0 
+    ##                NumJacEvals             NumLinRhsEvals 
+    ##                          2                          2 
+    ##                  NumGEvals            SensNumRhsEvals 
+    ##                          0                          0 
+    ##            NumRhsEvalsSens       SensNumLinSolvSetups 
+    ##                          0                          0 
+    ##        SensNumErrTestFails     SensNumNonlinSolvIters 
+    ##                          0                          0 
+    ## SensNumNonlinSolvConvFails 
+    ##                          0
 
 The same problem solved with RcppArmadillo rhs can look like:
 
 ``` r
 library(RcppXPtrUtils)
 Sys.setenv(PKG_CXXFLAGS=paste0("-I ", gsub("\\", "/", readLines(system.file("cvodes.txt", package="r2sundials"))[1L], fixed=TRUE)))
-```
-
-    ## Warning in file(con, "r"): file("") accepte seulement open = "w+" et open =
-    ## "w+b" : utilisation du premier
-
-``` r
 ti=seq(0, 3, length.out=101)
 p=c(nu=2, a=1)
 y0=0
