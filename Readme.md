@@ -6,10 +6,10 @@ wide spread library
 from LLNL written in C. It provides an access from R to some basic
 features of `cvodes` routine from this library which include:
 
-  - solving user defined ODE via user provided functions calculating
-    ODE’s right hand side (rhs);
-  - calculating forward sensitivities to parameters on which ODE
-    solution depends ;
+  - solving real valued, user defined ODE via user provided functions
+    calculating ODE’s right hand side (rhs);
+  - calculating first order forward sensitivities to parameters on which
+    ODE solution depends ;
   - setting key parameters for ODE solving method like explicit or
     implicit time scheme, minimal or maximal steps, error order etc.
 
@@ -20,13 +20,17 @@ by his own means (cf. [Install](#install) section)
 ## Why another ODE solver for R?
 
 The question is legitimate as there is already very furnished package
-[deSolve](https://cran.r-project.org/package=deSolve). There were also
+[deSolve](https://cran.r-project.org/package=deSolve). It was also
+published
 [Rsundials](https://cran.r-project.org/web/packages/Rsundials/index.html)
-package which is archived since 2017-03-26. There is also a fresh
+package but it is archived now since 2017-03-26. There is a fresh
 wrapper to the same library
-[sundialr](https://cran.r-project.org/package=sundialr). So why a new
-wrapper? Let see what are the novelties brought by `r2sundials` compared
-to still active alternatives: `deSolve` and `sundialr`.
+[sundialr](https://cran.r-project.org/package=sundialr). You can find
+even more packages dedicated to ODE solving in this [task
+view](https://cran.r-project.org/web/views/DifferentialEquations.html).
+So why a new wrapper? Let see what are the novelties brought by
+`r2sundials` compared to most close alternatives: `deSolve` and
+`sundialr`.
 
 ### deSolve
 
@@ -34,14 +38,16 @@ Compared to `deSolve`, `r2sundials` provides possibilities:
 
   - to do forward sensitivity calculations for all or selected
     parameters;
-  - to write rhs in Rcpp where calculated values are stored “in-place”
-    thus avoiding frequent memory reallocation;
-  - to write dense or sparse Jacobian Rcpp functions based on the same
-    principle, i.e. “in-place” storage;
+  - to write users callback functions (rhs, Jacobian, …) in
+    Rcpp(Armadillo) where calculated values are stored “in-place” thus
+    avoiding frequent memory reallocation;
+  - to pass *directly* to Rcpp functions parameter of any R type
+    (vector, list, environment, …);
   - to use [rmumps](https://cran.r-project.org/package=rmumps) package
     for solving underlying sparse linear systems;
-  - to have much more flexible root finding and handling.
-  - to see statistics of ODE methods (call number for rhs routines,
+  - to have much more flexible root finding and handling based on user
+    callback functions.
+  - to get statistics on ODE method used (call number for rhs routines,
     number of Jacobian calculations and so on).
 
 ### sundialr
@@ -49,20 +55,24 @@ Compared to `deSolve`, `r2sundials` provides possibilities:
 Compared to `sundialr`, `r2sundials` provides:
 
   - more complete access to fine tuning of `cvodes` methods;
-  - more complete parameter infrastructure. In `r2sundials` parameters
+  - more complete parameter infrastructure. In `r2sundials`, parameters
     passed to callback functions can be of any R type (vector, list,
     environment, …), not only numeric vector as in `sundialr`;
   - sensitivity calculations possibly done with the help of user
-    provided functions;
-  - if automatic sensitivity calculations is used, it can be done on a
-    selection of parameters, not necessarily on the totality of
-    parameters.
+    provided functions (and not only with internal sundials procedure);
+  - sensitivity calculations can be done on a selection of parameters,
+    not necessarily on the totality of parameters.
   - Jacobian (dense or sparse) calculated with possibly user provided
     functions;
-  - sparse calculations made with `rmumps` package;
+  - sparse system solving is made with `rmumps` package;
   - root finding and handling;
   - some statistics of ODE methods (call number for rhs routines, number
     of Jacobian calculations and so on).
+  - (as of time of this writing, 2019-07-09) more thorough memory
+    management which ensures that sundials’ allocated memory is freed in
+    due way, no matter what C++ exception and in what moment could
+    happen. This avoids potential memory leaking problem in case of
+    frequent package use during the same session.
 
 ## Install
 
@@ -119,9 +129,9 @@ variables:
     cvodes_libs=<cvodes_prefix>\lib
     PATH=%PATH%;%cvodes_libs%
 
-For example, on my windows machine, `cvodes` was installed in
+For example, on a windows machine, `cvodes` was installed in
 `d:\\local_soft\cvodes` directory so that a file `cvodes.h` can be found
-in `d:\\local_soft\cvodes\include\cvodes\cvodes.h`. In this case, I
+in `d:\\local_soft\cvodes\include\cvodes\cvodes.h`. In this case, we
 could define (using a command `setx`):
 
     > setx cvodes_include d:\\local_soft\cvodes\include
