@@ -72,8 +72,9 @@ SUNDIALS_EXPORT SUNLinearSolver SUNLinSol_RMUMPS(N_Vector y, SUNMatrix A, int  p
   content->irp=new Col<MUMPS_INT>(ir+1);
   content->jcp=new Col<MUMPS_INT>(nz);
   
-  content->rmu=new Rmumps((MUMPS_INT *)content->irp->begin(), (MUMPS_INT *)content->jcp->begin(), (double *) SM_DATA_S(A), (MUMPS_INT) n,  (MUMPS_INT) pc[n], (MUMPS_INT) 0); // 0=non symmetric matrix;
-  content->rmu->set_permutation(permutation);
+  XPtr<Rmumps> p=rmumps::Rmumps__ptr_ijv(XPtr<int>(content->irp->begin(), false), XPtr<int>(content->jcp->begin(), false), XPtr<double>(SM_DATA_S(A), false), n, pc[n], 0); // 0=non symmetric matrix;
+  content->rmu=p;
+  rmumps::Rmumps__set_permutation(p, permutation);
 /*
 List asl=content->rmu->triplet();
 print(wrap("init"));
@@ -128,40 +129,29 @@ SUNDIALS_EXPORT int SUNLinSolSetup_RMUMPS(SUNLinearSolver S, SUNMatrix A) {
   RMUMPS_CONTENT(S)->jcp->resize(nz);
   for (int j=1; j <= n; j++)
     RMUMPS_CONTENT(S)->jcp->subvec(pc[j-1], pc[j]-1).fill(j);
-/*Rcout << "old RMU(S)->irn.size()=" << RMU(S)->irn.size() << "\n";
-for (auto i: RMU(S)->irn)
-  Rcout << "irn=" << i << "\n";
-for (auto i: RMU(S)->jcn)
-  Rcout << "jcn=" << i << "\n";
-*/
   // if matrix structure changed, reinit Rmumps object
-  if (RMUMPS_CONTENT(S)->irp->n_elem != RMU(S)->irn.size() || !std::equal(RMUMPS_CONTENT(S)->irp->begin(), RMUMPS_CONTENT(S)->irp->end(), RMU(S)->irn.begin())) {
+  if (RMUMPS_CONTENT(S)->irp->n_elem != RMU(S).get()->irn.size() || !std::equal(RMUMPS_CONTENT(S)->irp->begin(), RMUMPS_CONTENT(S)->irp->end(), RMU(S).get()->irn.begin())) {
     // new Rmumps
 //Rcout << "new Rmumps\n";
-    int permutation=RMU(S)->get_permutation();
-    delete RMU(S);
+    int permutation=rmumps::Rmumps__get_permutation(RMU(S));
+    rmumps::Rmumps__del_ptr(RMU(S));
     RMUMPS_CONTENT(S)->irp->resize(nz);
     RMUMPS_CONTENT(S)->irp->subvec(0, nz-1)=ir+1;
 //RMUMPS_CONTENT(S)->irp->print("new irp");
 //RMUMPS_CONTENT(S)->jcp->print("new jcp");
-    RMU(S)=new Rmumps((MUMPS_INT *)RMUMPS_CONTENT(S)->irp->begin(), (MUMPS_INT *)RMUMPS_CONTENT(S)->jcp->begin(), (double *) SM_DATA_S(A), (MUMPS_INT) n,  (MUMPS_INT) nz, (MUMPS_INT) 0); // 0=non symmetric matrix;
-    RMU(S)->set_permutation(permutation);
-  /*} else if (std::equal(RMU(S)->anz.begin(), RMU(S)->anz.end(), SM_DATA_S(A))) {
-    // matrix did not change
-    LASTFLAG(S) = SUNLS_SUCCESS;
-    return(LASTFLAG(S));*/
+    RMU(S)=rmumps::Rmumps__ptr_ijv(XPtr<int>((MUMPS_INT *)RMUMPS_CONTENT(S)->irp->begin(), false), XPtr<int>((MUMPS_INT *)RMUMPS_CONTENT(S)->jcp->begin(), false), XPtr<double>(SM_DATA_S(A), false), n, nz, 0); // 0=non symmetric matrix;
+    rmumps::Rmumps__set_permutation(RMU(S), permutation);
   } else {
 //Rcout << "reset old Rmumps\n";
-    RMU(S)->set_mat_ptr(SM_DATA_S(A));
+    rmumps::Rmumps__set_mat_ptr(RMU(S), XPtr<double>(SM_DATA_S(A), false));
   }
 /*
-List asl=RMU(S)->triplet();
+List asl=rmumps::Rmumps__triplet(RMU(S));
 print(wrap("reset"));
 print(asl["i"]);
 print(asl["j"]);
 print(asl["v"]);
 */
-  //RMU(S)->numeric();
   LASTFLAG(S) = SUNLS_SUCCESS;
   return(LASTFLAG(S));
 }
@@ -193,14 +183,14 @@ SUNDIALS_EXPORT int SUNLinSolSolve_RMUMPS(SUNLinearSolver S, SUNMatrix A, N_Vect
 
   // Call RMUMPS to solve the linear system
 /*// print non identity matrix
-List asl=RMU(S)->triplet();
+List asl=rmumps::Rmumps__triplet(RMU(S));
 print(wrap("solve"));
 print(asl["i"]);
 print(asl["j"]);
 print(asl["v"]);
 vec(xdata, NV_LENGTH_S(x), false).print("b");
 */
-  RMU(S)->solveptr(xdata, n, 1);
+  rmumps::Rmumps__solveptr(RMU(S), XPtr<double>(xdata, false), n, 1);
   /*static mat ad=zeros(3,3);
   static vec xd(3);
   ad(0,0)=adata[0];
@@ -235,7 +225,7 @@ SUNDIALS_EXPORT int SUNLinSolFree_RMUMPS(SUNLinearSolver S) {
   if (S->content) {
     delete ((SUNLinearSolverContent_RMUMPS)S->content)->irp;
     delete ((SUNLinearSolverContent_RMUMPS)S->content)->jcp;
-    delete RMU(S); // Rmumps destructor
+    rmumps::Rmumps__del_ptr(RMU(S)); // Rmumps destructor
     free(S->content);
     S->content = NULL;
   }

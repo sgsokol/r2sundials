@@ -128,22 +128,22 @@ int sens_robertson1(int Ns, double t, const vec &y, vec &ydot, int iS, vec &yS, 
 
 # just rhs
 #print (system.time(
-outr <- r2sundials::cvodes(yini, times, r_rober, param=parms)
-out0 <- r2sundials::cvodes(yini, times, pfnd, param=parms)
+outr <- r2sundials::r2cvodes(yini, times, r_rober, param=parms)
+out0 <- r2sundials::r2cvodes(yini, times, pfnd, param=parms)
 #))
 test_that("equivalence of R and C++ rhs callbacks", {
   expect_equivalent(out0, outr, tolerance=1.e-6)
 })
 # sparse Jacobian
 #print (system.time(
-out1 <- r2sundials::cvodes(yini, times, pfnd, param=parms, fjac=pfnspj, nz=8)
+out1 <- r2sundials::r2cvodes(yini, times, pfnd, param=parms, fjac=pfnspj, nz=8)
 #))
 test_that("equivalence of solution with sparse Jacobian and no explicit Jacobian", {
   expect_equivalent(out0, out1, tolerance=1.e-6)
 })
 # dense Jacobian + forward sensitivity 1 by 1
 #print (system.time(
-out2 <- r2sundials::cvodes(yini, times, pfnd, param=parms, fjac=pfnj, Ns=3, psens=parms, fsens1=pfnsens1)
+out2 <- r2sundials::r2cvodes(yini, times, pfnd, param=parms, fjac=pfnj, Ns=3, psens=parms, fsens1=pfnsens1)
 #))
 test_that("equivalence of solutions with sparse Jacobian and dense Jacobian", {
   expect_equivalent(out2, out1, tolerance=1.e-6)
@@ -198,7 +198,7 @@ int event_ball(double t, const vec &y, vec &ynew, const int Ns, std::vector<vec>
   }
 }
 ', depends=c("RcppArmadillo", "r2sundials", "rmumps"), includes=includes, cacheDir="lib", verbose=FALSE)
-outb <- r2sundials::cvodes(yinib, timesb, pball, paramb, nroot=1, froot=proot, fevent=pevt)
+outb <- r2sundials::r2cvodes(yinib, timesb, pball, paramb, nroot=1, froot=proot, fevent=pevt)
 test_that("root finding", {
   expect_equal(dim(attr(outb, "roots")), c(2, 5))
 })
@@ -235,7 +235,7 @@ event_ball_r=local({
   }
 })
 #system.time(
-outbr <- r2sundials::cvodes(yinib, timesb, rhs_ball_r, paramb, nroot=1, froot=root_ball_r, fevent=event_ball_r)
+outbr <- r2sundials::r2cvodes(yinib, timesb, rhs_ball_r, paramb, nroot=1, froot=root_ball_r, fevent=event_ball_r)
 #)
 #class(outbr)=class(out); plot(outbr)
 test_that("root finding in R", {
@@ -255,7 +255,7 @@ int d_exp(double t, const vec &y, vec &ydot, RObject &param, NumericVector &psen
 par_exp=c("nu"=1, "lim"=1)
 ti=seq(0, 5, length.out=11)
 #system.time(
-oute <- r2sundials::cvodes(0., ti, pexp, Ns=2, psens=par_exp)
+oute <- r2sundials::r2cvodes(0., ti, pexp, Ns=2, psens=par_exp)
 #)
 test_that("numeric precision", {
   theor=par_exp["lim"]-exp(-par_exp["nu"]*ti)

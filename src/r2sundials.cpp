@@ -1,7 +1,7 @@
 #include "../inst/include/r2sundials.h"
 //' @title Solving ODE System and Sensitivity Equations
 //'
-//' @description \code{cvodes} sets up necessary structures and calls \code{cvodes()} from SUNDIALS library to solve user defined ODE system \eqn{y' = f(t, y, p)}, \eqn{y(t0) = y0}, where \eqn{p} is a constant parameter vector. If requested, corresponding forward sensitivity equations \eqn{s'[i] = df/dy s[i] + df/dp[i]}, \eqn{s[i](t0) = dy0(p)/dp[i]} (here \eqn{s[i](t)=dy(t)/dp[i]}) can be solved simultaneously with the original ODE system. Root finding and proceeding can be defined as well.
+//' @description \code{r2cvodes} sets up necessary structures and calls \code{cvodes()} from SUNDIALS library to solve user defined ODE system \eqn{y' = f(t, y, p)}, \eqn{y(t0) = y0}, where \eqn{p} is a constant parameter vector. If requested, corresponding forward sensitivity equations \eqn{s'[i] = df/dy s[i] + df/dp[i]}, \eqn{s[i](t0) = dy0(p)/dp[i]} (here \eqn{s[i](t)=dy(t)/dp[i]}) can be solved simultaneously with the original ODE system. Root finding and proceeding can be defined as well.
 //'
 //' @param yv const numeric vector, initial values of state vector (\eqn{y0}). Its length defines the number of equations in the ODE system and is refered hereafter as 'Neq'.
 //' @param times const numeric vector, time point values at which the solution is stored
@@ -46,15 +46,15 @@
 //' \item{sens}{sensitivity 3D array with dimensions \code{Neq} x \code{Nt} x \code{Ns}}
 //' }
 //'
-//' @details The package \pkg{r2sundials} was designed to avoid as much as possible memory reallocation in callback functions (\code{frhs} and others). C++ variants of these functions are fully compliant with this design principle. While R counterparts are not as per R design. Here, we define callback function interfaces that user has to abide to. Pointers to C++ variants to be passed to \code{cvodes()} can be obtained with the help of \pkg{RcppXPtrUtils}. See examples for illustrations of such use.
-//' \cr Right hand side function \code{frhs} provided by user calculates derivative vector \eqn{y'}. This function can be defined as classical R function or a Rcpp/RcppArmadillo function. In the first case, it must have the following list of input arguments \code{frhs(t, y, param, psens)} and return a derivative vector of length \code{Neq}. Here \code{t} is time point (numeric scalar), \code{y} current state vector (numeric vector of length \code{Neq}), \code{param} and \code{psens} are passed through from \code{cvodes()} arguments.
+//' @details The package \pkg{r2sundials} was designed to avoid as much as possible memory reallocation in callback functions (\code{frhs} and others). C++ variants of these functions are fully compliant with this design principle. While R counterparts are not (as per R design). Here, we define callback function interfaces that user has to abide to. Pointers to C++ variants to be passed to \code{r2cvodes()} can be obtained with the help of \pkg{RcppXPtrUtils}. See examples for illustrations of such use.
+//' \cr Right hand side function \code{frhs} provided by user calculates derivative vector \eqn{y'}. This function can be defined as classical R function or a Rcpp/RcppArmadillo function. In the first case, it must have the following list of input arguments \code{frhs(t, y, param, psens)} and return a derivative vector of length \code{Neq}. Here \code{t} is time point (numeric scalar), \code{y} current state vector (numeric vector of length \code{Neq}), \code{param} and \code{psens} are passed through from \code{r2cvodes()} arguments.
 //' \cr In the C++ case, it is defined as \code{int (*frhs)(double t, const vec &y, vec &ydot, RObject &param, NumericVector &psens)} and return an integer status flag, e.g. \code{CV_SUCCESS}. For other possible status flags see the original \href{https://computation.llnl.gov/sites/default/files/public/cvs_guide.pdf}{SUNDIALS documentation}. The derivatives are stored in-place in \code{ydot} vector. See examples section for a usage sample.
 //' \cr \code{fjac} is a function calculating Jacobian matrix. Its definition varies depending on 1) kind of used Jacobian: dense or sparse and 2) on programming language used: R or C++ (i.e. Rcpp/RcppArmadillo).
 //' \itemize{
 //' \item For dense Jacobian calculated in R, the arguments are: \code{fjac(t, y, ydot, param, psens)} and the expected return value is \code{Neq} x \code{Neq} dense Jacobian matrix df/dy.
 //' \item For dense Jacobian calculated in C++ the definition is following: \code{int (*fjac)(double t, const vec &y, vec &ydot, mat &J, RObject &param, NumericVector &psens, vec &tmp1, vec &tmp2, vec &tmp3)}. It must return a status flag. The resulting Jacobian is stored in-place in the the matrix \code{J}. Auxiliary vectors \code{tmp1} to \code{tmp2} are of length \code{Neq} and are available for intermediate storage thus avoiding memory reallocation at each call to \code{fjac()}.
 //' \item For sparse Jacobian calculated in R, the arguments are: \code{fjac(t, yv, ydotv, param, psens)}. The return value is a list with fields \code{i} (row indices), \code{p} (column pointers) and \code{v} (matrix values) defining the content of sparse Jacobian in CSC (condensed sparse column) format. The values stored in i and p vectors are supposed to be 1-based, as it is common in R language.
-//' \item For sparse Jacobian calculated in C++ the definition is following: \code{int (*fjac)(double t, vec &y, vec &ydot, uvec &i, uvec &p, vec &v, int n, int nz, RObject &param, NumericVector &psens, vec &tmp1, vec &tmp2, vec &tmp3)}, here \code{n=Neq}, \code{nz} is passed through from cvodes() arguments. The resulting sparse Jacobian is stored in-place in vectors \code{i}, \code{p}, \code{v} corresponding to the CSC (Compressed Sparse Column) format. Their respective dimensions are \code{nz}, \code{n+1} and \code{nz}. The values stored in \code{i} and \code{p} must be 0 based as per usage in C++. The return value is a status flag.
+//' \item For sparse Jacobian calculated in C++ the definition is following: \code{int (*fjac)(double t, vec &y, vec &ydot, uvec &i, uvec &p, vec &v, int n, int nz, RObject &param, NumericVector &psens, vec &tmp1, vec &tmp2, vec &tmp3)}, here \code{n=Neq}, \code{nz} is passed through from r2cvodes() arguments. The resulting sparse Jacobian is stored in-place in vectors \code{i}, \code{p}, \code{v} corresponding to the CSC (Compressed Sparse Column) format. Their respective dimensions are \code{nz}, \code{n+1} and \code{nz}. The values stored in \code{i} and \code{p} must be 0 based as per usage in C++. The return value is a status flag.
 //' }
 //' \code{froot} calculates a root vector, i.e. a vector whose components are tracked for 0 crossing during the time course in ODE solving. If written in R, its call follows the following pattern: \code{froot(t, y, param, psens)} and it must return a numeric vector of length 'nroot'. If written in C++, it is defined as \code{int (*froot)(double t, const vec &y, vec &vroot, RObject &param, NumericVector &psens)}. The tracked values are stored in-place in \code{vroot}. The returned value is a status flag.
 //' \cr \code{fevent} handles the event of root finding. If written in R, the calling pattern is \code{fevent(t, yvec, Ns, ySm, rootsfound, param, psens)} and the return value is a list with named component "ynew", "flag" and "sens_init". The last item is required only when \code{Ns > 0}. Current value of sensitivity matrix \eqn{dy/dp} can be found in parameter \code{ySm}. Integer vector 'rootsfound' of length 'nroot' provides information on \code{vroot} components that triggered the root event. If \code{rootsfound[i] != 0}, it means that \code{vroot[i]} is a root otherwise it is not. Moreover, the sign of \code{rootsfound[i]} is meaningful. If \code{rootsfound[i] > 0} then \code{vroot[i]} is increasing at 0 crossing. Respectively, if \code{rootsfound[i] < 0} then \code{vroot[i]} is decreasing. The vector 'ynew' in the output list can define a new state vector after event handling (for example, an abrupt change in velocity direction and/or magnitude after an obstacle hit). The field 'flag' in the output list is authorized to take only three values: \code{R2SUNDIALS_EVENT_IGNORE}, \code{R2SUNDIALS_EVENT_HOLD} and \code{R2SUNDIALS_EVENT_STOP} described here-before. The matrix \code{sens_init} is used for a possible restarting of sensitivity calculation. It must contain a derivative matrix \eqn{dynew/dp} of size \code{Neq x Ns}. If this field is absent (NULL) then a zero matrix is assumed.
@@ -75,8 +75,8 @@
 //' ti=seq(0, 5, length.out=101)
 //' # define initial state vector
 //' y0=0
-//' # we are set for a very simple cvodes() call
-//' res_exp=r2sundials::cvodes(y0, ti, frhs_exp, param=p)
+//' # we are set for a very simple r2cvodes() call
+//' res_exp=r2sundials::r2cvodes(y0, ti, frhs_exp, param=p)
 //' # compare the result to theoretical values: 1-exp(-a*t)
 //' stopifnot(diff(range(1-exp(-p$a*ti) - res_exp)) < 1.e-6)
 //' \donttest{
@@ -93,8 +93,8 @@
 //'  includes="using namespace arma;\n#include <r2sundials.h>", cacheDir="lib", verbose=FALSE)
 //' # For ease of use in C++, we convert param to a numeric vector instead of a list.
 //' pv=c(a=p$a)
-//' # new call to cvodes() with XPtr pointer ptr_exp.
-//' res_exp2=r2sundials::cvodes(y0, ti, ptr_exp, param=pv)
+//' # new call to r2cvodes() with XPtr pointer ptr_exp.
+//' res_exp2=r2sundials::r2cvodes(y0, ti, ptr_exp, param=pv)
 //' stopifnot(diff(range(res_exp2 - res_exp)) < 1.e-14)
 //'
 //' # Ex.3. Bouncing ball simulation.
@@ -154,7 +154,7 @@
 //'     return(R2SUNDIALS_EVENT_HOLD);
 //'   } else {
 //'     // here nbounce=5
-//'     nbounce=0; // reinit counter for possible next calls to cvodes
+//'     nbounce=0; // reinit counter for possible next calls to r2cvodes
 //'     return(R2SUNDIALS_EVENT_STOP);
 //'   }
 //' }
@@ -162,7 +162,7 @@
 //'  includes="using namespace arma;\n#include <r2sundials.h>", cacheDir="lib", verbose=FALSE)
 //'
 //' # ODE solving and plotting
-//' res_ball <- r2sundials::cvodes(yv, ti, ptr_ball, param=pv, nroot=2L,
+//' res_ball <- r2sundials::r2cvodes(yv, ti, ptr_ball, param=pv, nroot=2L,
 //'   froot=ptr_ball_root, fevent=ptr_ball_event)
 //' plot(res_ball["x",], res_ball["y",], xlab="X [m]", ylab="Y [m]",
 //'   t="l", main="Bouncing ball simulation")
@@ -265,7 +265,7 @@
 //' ', depends=c("RcppArmadillo","r2sundials","rmumps"),
 //'  includes="using namespace arma;\n#include <r2sundials.h>", cacheDir="lib", verbose=FALSE)
 //' # Note that we don't use psens param for sensitivity calculations as we provide our own fsens1.
-//' res_rob <- r2sundials::cvodes(yv, ti, ptr_rob, param=pv, nz=8, fjac=ptr_rob_jacsp, Ns=3,
+//' res_rob <- r2sundials::r2cvodes(yv, ti, ptr_rob, param=pv, nz=8, fjac=ptr_rob_jacsp, Ns=3,
 //'                               fsens1=ptr_rob_sens1)
 //' # plot ODE solution
 //' layout(t(1:3)) # three sublots in a row
@@ -280,7 +280,7 @@
 //' }
 //' @export
 // [[Rcpp::export]]
-NumericMatrix cvodes(const NumericVector &yv, const vec &times, const RObject &frhs, RObject param=R_NilValue, const NumericVector tstop=NumericVector::create(), const double abstol=1.e-8, const double reltol=1.e-8, IntegerVector integrator=IntegerVector::create(), const int maxord=0, const int maxsteps=0, const double hin=0., const double hmax=0., const double hmin=0., const vec &constraints=NumericVector::create(), const RObject fjac=R_NilValue, const int nz=0, IntegerVector rmumps_perm=IntegerVector::create(), const int nroot=0, const RObject froot=R_NilValue, const RObject fevent=R_NilValue,
+NumericMatrix r2cvodes(const NumericVector &yv, const vec &times, const RObject &frhs, RObject param=R_NilValue, const NumericVector tstop=NumericVector::create(), const double abstol=1.e-8, const double reltol=1.e-8, IntegerVector integrator=IntegerVector::create(), const int maxord=0, const int maxsteps=0, const double hin=0., const double hmax=0., const double hmin=0., const vec &constraints=NumericVector::create(), const RObject fjac=R_NilValue, const int nz=0, IntegerVector rmumps_perm=IntegerVector::create(), const int nroot=0, const RObject froot=R_NilValue, const RObject fevent=R_NilValue,
 const int Ns=0, NumericVector psens=NumericVector::create(), NumericVector sens_init=NumericVector::create(), NumericVector psens_bar=NumericVector::create(), const IntegerVector psens_list=IntegerVector::create(), const RObject fsens=R_NilValue, const RObject fsens1=R_NilValue, IntegerVector sens_method=IntegerVector::create(), const bool errconS=true) {
   //long clk_tck = CLOCKS_PER_SEC;
   //clock_t t1, t2;
@@ -819,15 +819,6 @@ int get_cnst(std::string s) {
     cnst_pair(R2SUNDIALS_EVENT_IGNORE),
     cnst_pair(R2SUNDIALS_EVENT_HOLD),
     cnst_pair(R2SUNDIALS_EVENT_STOP),
-    /*
-    cnst_pair(RMUMPS_PERM_AMD),
-    cnst_pair(RMUMPS_PERM_AMF),
-    cnst_pair(RMUMPS_PERM_SCOTCH),
-    cnst_pair(RMUMPS_PERM_PORD),
-    cnst_pair(RMUMPS_PERM_METIS),
-    cnst_pair(RMUMPS_PERM_QAMD),
-    cnst_pair(RMUMPS_PERM_AUTO),
-    */
     cnst_pair(CV_SIMULTANEOUS),
     cnst_pair(CV_STAGGERED),
     cnst_pair(CV_STAGGERED1)

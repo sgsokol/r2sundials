@@ -7,9 +7,9 @@
 
 using namespace Rcpp;
 
-// cvodes
-NumericMatrix cvodes(const NumericVector& yv, const vec& times, const RObject& frhs, RObject param, const NumericVector tstop, const double abstol, const double reltol, IntegerVector integrator, const int maxord, const int maxsteps, const double hin, const double hmax, const double hmin, const vec& constraints, const RObject fjac, const int nz, IntegerVector rmumps_perm, const int nroot, const RObject froot, const RObject fevent, const int Ns, NumericVector psens, NumericVector sens_init, NumericVector psens_bar, const IntegerVector psens_list, const RObject fsens, const RObject fsens1, IntegerVector sens_method, const bool errconS);
-RcppExport SEXP _r2sundials_cvodes(SEXP yvSEXP, SEXP timesSEXP, SEXP frhsSEXP, SEXP paramSEXP, SEXP tstopSEXP, SEXP abstolSEXP, SEXP reltolSEXP, SEXP integratorSEXP, SEXP maxordSEXP, SEXP maxstepsSEXP, SEXP hinSEXP, SEXP hmaxSEXP, SEXP hminSEXP, SEXP constraintsSEXP, SEXP fjacSEXP, SEXP nzSEXP, SEXP rmumps_permSEXP, SEXP nrootSEXP, SEXP frootSEXP, SEXP feventSEXP, SEXP NsSEXP, SEXP psensSEXP, SEXP sens_initSEXP, SEXP psens_barSEXP, SEXP psens_listSEXP, SEXP fsensSEXP, SEXP fsens1SEXP, SEXP sens_methodSEXP, SEXP errconSSEXP) {
+// r2cvodes
+NumericMatrix r2cvodes(const NumericVector& yv, const vec& times, const RObject& frhs, RObject param, const NumericVector tstop, const double abstol, const double reltol, IntegerVector integrator, const int maxord, const int maxsteps, const double hin, const double hmax, const double hmin, const vec& constraints, const RObject fjac, const int nz, IntegerVector rmumps_perm, const int nroot, const RObject froot, const RObject fevent, const int Ns, NumericVector psens, NumericVector sens_init, NumericVector psens_bar, const IntegerVector psens_list, const RObject fsens, const RObject fsens1, IntegerVector sens_method, const bool errconS);
+RcppExport SEXP _r2sundials_r2cvodes(SEXP yvSEXP, SEXP timesSEXP, SEXP frhsSEXP, SEXP paramSEXP, SEXP tstopSEXP, SEXP abstolSEXP, SEXP reltolSEXP, SEXP integratorSEXP, SEXP maxordSEXP, SEXP maxstepsSEXP, SEXP hinSEXP, SEXP hmaxSEXP, SEXP hminSEXP, SEXP constraintsSEXP, SEXP fjacSEXP, SEXP nzSEXP, SEXP rmumps_permSEXP, SEXP nrootSEXP, SEXP frootSEXP, SEXP feventSEXP, SEXP NsSEXP, SEXP psensSEXP, SEXP sens_initSEXP, SEXP psens_barSEXP, SEXP psens_listSEXP, SEXP fsensSEXP, SEXP fsens1SEXP, SEXP sens_methodSEXP, SEXP errconSSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -42,7 +42,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const RObject >::type fsens1(fsens1SEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type sens_method(sens_methodSEXP);
     Rcpp::traits::input_parameter< const bool >::type errconS(errconSSEXP);
-    rcpp_result_gen = Rcpp::wrap(cvodes(yv, times, frhs, param, tstop, abstol, reltol, integrator, maxord, maxsteps, hin, hmax, hmin, constraints, fjac, nz, rmumps_perm, nroot, froot, fevent, Ns, psens, sens_init, psens_bar, psens_list, fsens, fsens1, sens_method, errconS));
+    rcpp_result_gen = Rcpp::wrap(r2cvodes(yv, times, frhs, param, tstop, abstol, reltol, integrator, maxord, maxsteps, hin, hmax, hmin, constraints, fjac, nz, rmumps_perm, nroot, froot, fevent, Ns, psens, sens_init, psens_bar, psens_list, fsens, fsens1, sens_method, errconS));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -59,7 +59,7 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_r2sundials_cvodes", (DL_FUNC) &_r2sundials_cvodes, 29},
+    {"_r2sundials_r2cvodes", (DL_FUNC) &_r2sundials_r2cvodes, 29},
     {"_r2sundials_get_cnst", (DL_FUNC) &_r2sundials_get_cnst, 1},
     {NULL, NULL, 0}
 };

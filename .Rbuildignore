@@ -3,5 +3,9 @@ gdb.txt
 NAMESPACE.empty
 NAMESPACE.save
 configure.win.patch
+configure.win.orig
+configure.win.rej
 ^\.git.*$
 ^autom.*$
+Readme.Rmd
+Readme.md

@@ -1,5 +1,12 @@
+Version 5.0.0-1
+===============
+
+* 2019-10-29
+ - moved to CVODES v5.0.0 (but must be still compatible with v4.1.0)
+ - renamed exported function from cvodes() to r2cvodes()
+
 Version 4.1.0-1
 ===============
 
-* 2019-06-17
+* 2019-09-03
  - first release. It includes cvodes() for ODE and optionally sensitivity problem solving

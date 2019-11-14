@@ -1,4 +1,4 @@
-export(cvodes)
+export(r2cvodes)
 export(get_cnst)
 exportPattern("^CV_.+")
 exportPattern("^R2SUNDIALS_.+")

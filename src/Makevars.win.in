@@ -1,8 +1,7 @@
 CXX_STD = CXX11
 PKG_CXXFLAGS = -I../inst/include -I"@CVODES_INCLUDE@" -D_WIN
-RMUMPS_PATH = `"$(R_HOME)"/bin$(R_ARCH_BIN)/Rscript -e "library(rmumps); cat(system.file('libs',  package='rmumps', mustWork=TRUE))"`
 
-PKG_LIBS = -L"@CVODES_LIBS@" -lsundials_cvodes -L"$(RMUMPS_PATH)"$(R_ARCH) -lrmumps $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS)
+PKG_LIBS = -L"@CVODES_LIBS@" -lsundials_cvodes $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS)
 
 #MYCXXFLAGS=-O0
 #%.o: %.cpp 

@@ -21,7 +21,7 @@ extern "C" {
 
 #define RMUMPS_CONTENT(S)     ( (SUNLinearSolverContent_RMUMPS)(S->content) )
 #define LASTFLAG(S)        ( RMUMPS_CONTENT(S)->last_flag )
-#define RMU(S)          ( RMUMPS_CONTENT(S)->rmu )
+#define RMU(S)          ( as<XPtr<Rmumps>>(RMUMPS_CONTENT(S)->rmu) )
 
 /* Default RMUMPS solver parameters */
 #define SUNRMUMPS_ORDERING_DEFAULT  "auto"
@@ -40,7 +40,7 @@ extern "C" {
  
 struct _SUNLinearSolverContent_RMUMPS {
   long int last_flag;
-  Rmumps *rmu;
+  SEXP rmu;
   Col<MUMPS_INT> *irp;
   Col<MUMPS_INT> *jcp;
 };

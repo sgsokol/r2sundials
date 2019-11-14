@@ -1,4 +1,4 @@
 #!/bin/sh
 
 ## a.out.dSYM may get created on OS X.
-rm -rf config.* src/Makevars src/Makevars.win inst/cvodes.txt src/config.h a.out* src/*.o src/*.so tests/testthat/lib tests/testthat/.R* .RData .Rhistory src/.R*
+rm -rf config.* src/Makevars src/Makevars.win inst/cvodes.txt src/config.h a.out* src/*.o src/*.so lib/ tests/testthat/lib tests/testthat/.R* .RData .Rhistory src/.R*

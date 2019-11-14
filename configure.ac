@@ -1,4 +1,4 @@
-AC_INIT([r2sundials], 4.1.0-1, [sokol@insa-toulouse.fr])
+AC_INIT([r2sundials], 5.0.0-1, [sokol@insa-toulouse.fr])
 
 if test -z "${R_HOME}"; then
    : ${R_HOME=`R RHOME`}
@@ -53,7 +53,16 @@ else
       CVODES_LIBS="/usr/local/lib64"
    fi
 fi
+dnl Check the lib can be found
+SAVE_LDFLAGS=$LDFLAGS
+LDFLAGS="$LDFLAGS -L$CVODES_LIBS"
+AC_CHECK_LIB([sundials_cvodes], [CVode], [],
+[
+  AC_MSG_ERROR([Could  not find sundials_cvodes library])
+])
+LDFLAGS=$SAVE_LDFLAGS
 
+# make substitution
 AC_SUBST(CVODES_INCLUDE)
 AC_SUBST(CVODES_LIBS)
 AC_CONFIG_FILES([src/Makevars src/Makevars.win inst/cvodes.txt])

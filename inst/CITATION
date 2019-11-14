@@ -10,6 +10,9 @@ citEntry(entry = "Article",
   volume       = "31",
   number       = "3",
   pages        = "363--396",
-  publisher    = "ACM"
+  publisher    = "ACM",
+  textVersion  = paste("A. C. Hindmarsh & al. (2005).",
+        "SUNDIALS: Suite of nonlinear and differential/algebraic equation solvers",
+        "ACM Transactions on Mathematical Software (TOMS), 31(3), 363-396.")
 )
 )
