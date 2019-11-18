@@ -5,7 +5,10 @@ NAMESPACE.save
 configure.win.patch
 configure.win.orig
 configure.win.rej
+configure.orig
+^.*\.save$
 ^\.git.*$
 ^autom.*$
 Readme.Rmd
 Readme.md
+include

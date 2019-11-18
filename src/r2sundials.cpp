@@ -82,7 +82,8 @@
 //' \donttest{
 //' # Ex. 2. Same problem but frhs is written in C++
 //' library(RcppXPtrUtils)
-//' Sys.setenv(PKG_CXXFLAGS=paste0("-I ", gsub("\\", "/", readLines(system.file("cvodes.txt", package="r2sundials"))[1L], fixed=TRUE)))
+//' idir=gsub("\\", "/", readLines(system.file("cvodes.txt", package="r2sundials"))[1L], fixed=TRUE)
+//' Sys.setenv(PKG_CXXFLAGS=paste0("-I ", idir))
 //' ptr_exp=cppXPtr(code='
 //' int rhs_exp(double t, const vec &y, vec &ydot, RObject &param, NumericVector &psens) {
 //'   NumericVector p(param);
@@ -698,8 +699,14 @@ int spjacwrap(realtype t, N_Vector y, N_Vector ydot, SUNMatrix J, void *user_dat
     tmp1v(NV_DATA_S(tmp1), NV_LENGTH_S(tmp1), false),
     tmp2v(NV_DATA_S(tmp2), NV_LENGTH_S(tmp2), false),
     tmp3v(NV_DATA_S(tmp3), NV_LENGTH_S(tmp3), false);
+#if defined(SUNDIALS_INT32_T)
   uvec ir((unsigned int *) SM_INDEXVALS_S(J), nz, false);
   uvec p((unsigned int *) SM_INDEXPTRS_S(J), neq+1, false);
+#else
+  Col<sunindextype> irsun(SM_INDEXVALS_S(J), nz, false), psun(SM_INDEXPTRS_S(J), neq+1, false);
+  uvec ir=conv_to<uvec>::from(irsun);
+  uvec p=conv_to<uvec>::from(psun);
+#endif
   vec v((double *) SM_DATA_S(J), nz, false);
   if (TYPEOF(lp["fjac"]) == CLOSXP) {
     // plain R function
@@ -708,15 +715,25 @@ int spjacwrap(realtype t, N_Vector y, N_Vector ydot, SUNMatrix J, void *user_dat
     uvec rir=res["i"];
     uvec rp=res["p"];
     vec rv=res["v"];
+#if defined(SUNDIALS_INT32_T)
     ir=rir-1;
     p=rp-1;
+#else
+    irsun=conv_to<Col<sunindextype>>::from(rir-1);
+    psun=conv_to<Col<sunindextype>>::from(rp-1);
+#endif
     v=rv;
     return(CV_SUCCESS);
   } else {
     // get user function pointer
     XPtr< rsunSpJacFn > xuser_fn=as<XPtr< rsunSpJacFn >>(lp["fjac"]);
     rsunSpJacFn user_fn=*xuser_fn;
-    return(user_fn(t, yv, ydotv, ir, p, v, neq, nz, param, udata->psens, tmp1v, tmp2v, tmp3v));
+    int res=user_fn(t, yv, ydotv, ir, p, v, neq, nz, param, udata->psens, tmp1v, tmp2v, tmp3v);
+#if !defined(SUNDIALS_INT32_T)
+    irsun=conv_to<Col<sunindextype>>::from(ir);
+    psun=conv_to<Col<sunindextype>>::from(p);
+#endif
+    return(res);
   }
 }
 int rootwrap(realtype t, N_Vector y, realtype *rootout, void *user_data) {

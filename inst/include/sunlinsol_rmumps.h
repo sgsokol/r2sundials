@@ -21,17 +21,19 @@ extern "C" {
 
 #define RMUMPS_CONTENT(S)     ( (SUNLinearSolverContent_RMUMPS)(S->content) )
 #define LASTFLAG(S)        ( RMUMPS_CONTENT(S)->last_flag )
-#define RMU(S)          ( as<XPtr<Rmumps>>(RMUMPS_CONTENT(S)->rmu) )
+#define RMU(S)          ( *(RMUMPS_CONTENT(S)->rmu) )
 
 /* Default RMUMPS solver parameters */
 #define SUNRMUMPS_ORDERING_DEFAULT  "auto"
 
 /* Interfaces to match 'sunindextype' with the correct RMUMPS types/functions */
+/*
 #if defined(SUNDIALS_INT64_T)
 #error Incompatible SUNDIALS int type for rmumps
 #elif !defined(SUNDIALS_INT32_T)
 #error  Incompatible SUNDIALS int type for rmumps
 #endif
+*/
 
 #if defined(SUNDIALS_DOUBLE_PRECISION)
 #else
@@ -40,7 +42,7 @@ extern "C" {
  
 struct _SUNLinearSolverContent_RMUMPS {
   long int last_flag;
-  SEXP rmu;
+  XPtr<Rmumps> *rmu;
   Col<MUMPS_INT> *irp;
   Col<MUMPS_INT> *jcp;
 };

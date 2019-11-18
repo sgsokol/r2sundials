@@ -61,8 +61,13 @@ SUNDIALS_EXPORT SUNLinearSolver SUNLinSol_RMUMPS(N_Vector y, SUNMatrix A, int  p
   if (SM_COLUMNS_S(A) != SM_ROWS_S(A))
     stop("SUNLinSol_RMUMPS: matrix is supposed to be square, instead got %dx%d", SM_ROWS_S(A), SM_COLUMNS_S(A));
   // build jcp array from irp and pc
+#if defined(SUNDIALS_INT32_T)
   ivec ir(SM_INDEXVALS_S(A), nz, false);
   ivec pc(SM_INDEXPTRS_S(A), n+1, false);
+#else
+  ivec ir=conv_to<ivec>::from(Col<sunindextype>(SM_INDEXVALS_S(A), nz, false));
+  ivec pc=conv_to<ivec>::from(Col<sunindextype>(SM_INDEXPTRS_S(A), n+1, false));
+#endif
 //pc.print("pc");
 //ir.print("ir");
 //vec av(SM_DATA_S(S), nz, false);
@@ -72,9 +77,9 @@ SUNDIALS_EXPORT SUNLinearSolver SUNLinSol_RMUMPS(N_Vector y, SUNMatrix A, int  p
   content->irp=new Col<MUMPS_INT>(ir+1);
   content->jcp=new Col<MUMPS_INT>(nz);
   
-  XPtr<Rmumps> p=rmumps::Rmumps__ptr_ijv(XPtr<int>(content->irp->begin(), false), XPtr<int>(content->jcp->begin(), false), XPtr<double>(SM_DATA_S(A), false), n, pc[n], 0); // 0=non symmetric matrix;
-  content->rmu=p;
-  rmumps::Rmumps__set_permutation(p, permutation);
+  //XPtr<Rmumps> p(rmumps::Rmumps__ptr_ijv(XPtr<int>(content->irp->begin(), false), XPtr<int>(content->jcp->begin(), false), XPtr<double>(SM_DATA_S(A), false), n, pc[n], 0), false); // 0=non symmetric matrix;
+  content->rmu=new XPtr<Rmumps>(rmumps::Rmumps__ptr_ijv(XPtr<int>(content->irp->begin(), false), XPtr<int>(content->jcp->begin(), false), XPtr<double>(SM_DATA_S(A), false), n, pc[n], 0));
+  rmumps::Rmumps__set_permutation(*(content->rmu), permutation);
 /*
 List asl=content->rmu->triplet();
 print(wrap("init"));
@@ -119,9 +124,15 @@ SUNDIALS_EXPORT int SUNLinSolSetup_RMUMPS(SUNLinearSolver S, SUNMatrix A) {
     return(LASTFLAG(S));
   }
   // update matrix data
+#if defined(SUNDIALS_INT32_T)
   ivec pc(SM_INDEXPTRS_S(A), n+1, false);
   int nz=pc[n];
   ivec ir(SM_INDEXVALS_S(A), nz, false);
+#else
+  ivec pc=conv_to<ivec>::from(Col<sunindextype>(SM_INDEXPTRS_S(A), n+1, false));
+  int nz=pc[n];
+  ivec ir=conv_to<ivec>::from(Col<sunindextype>(SM_INDEXVALS_S(A), nz, false));
+#endif
 //ir.print("new ir");
 //ir.print("new pc");
   delete RMUMPS_CONTENT(S)->irp;
@@ -163,7 +174,8 @@ SUNDIALS_EXPORT int SUNLinSolSolve_RMUMPS(SUNLinearSolver S, SUNMatrix A, N_Vect
 //clock_t t1, t2;
   //static int ncall=0;
   //ncall++;
-  int n=NV_LENGTH_S(x), *ap=SM_INDEXPTRS_S(A);
+  int n=NV_LENGTH_S(x);
+  sunindextype *ap=SM_INDEXPTRS_S(A);
   realtype *xdata=N_VGetArrayPointer(x), *bdata=N_VGetArrayPointer(b), *adata=SM_DATA_S(A);
   
   if (xdata == NULL) {
@@ -223,8 +235,8 @@ SUNDIALS_EXPORT int SUNLinSolFree_RMUMPS(SUNLinearSolver S) {
   
   // delete items from the contents structure (if it exists)
   if (S->content) {
-    delete ((SUNLinearSolverContent_RMUMPS)S->content)->irp;
-    delete ((SUNLinearSolverContent_RMUMPS)S->content)->jcp;
+    delete RMUMPS_CONTENT(S)->irp;
+    delete RMUMPS_CONTENT(S)->jcp;
     rmumps::Rmumps__del_ptr(RMU(S)); // Rmumps destructor
     free(S->content);
     S->content = NULL;

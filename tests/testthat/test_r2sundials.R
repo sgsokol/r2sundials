@@ -1,5 +1,11 @@
-cvodes=readLines(file.path(path.package("r2sundials"), "cvodes.txt"))
-Sys.setenv(PKG_CXXFLAGS=paste0("-I", gsub("\\", "/", cvodes[1L], fixed=TRUE)))
+if (file.exists(file.path(path.package("r2sundials"), "inst"))) {
+  cvodes=readLines(file.path(path.package("r2sundials"), "inst", "cvodes.txt"))
+  pincl=paste0(" -I", file.path(path.package("r2sundials"), "inst", "include"))
+} else {
+  cvodes=readLines(file.path(path.package("r2sundials"), "cvodes.txt"))
+  pincl=""
+}
+Sys.setenv(PKG_CXXFLAGS=paste0("-I", gsub("\\", "/", cvodes[1L], fixed=TRUE), pincl))
 context("Robertson")
 yini <- c(y1=1, y2=0, y3=0)
 neq=length(yini)

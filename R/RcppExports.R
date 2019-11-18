@@ -84,7 +84,8 @@
 #' \donttest{
 #' # Ex. 2. Same problem but frhs is written in C++
 #' library(RcppXPtrUtils)
-#' Sys.setenv(PKG_CXXFLAGS=paste0("-I ", gsub("\\", "/", readLines(system.file("cvodes.txt", package="r2sundials"))[1L], fixed=TRUE)))
+#' idir=gsub("\\", "/", readLines(system.file("cvodes.txt", package="r2sundials"))[1L], fixed=TRUE)
+#' Sys.setenv(PKG_CXXFLAGS=paste0("-I ", idir))
 #' ptr_exp=cppXPtr(code='
 #' int rhs_exp(double t, const vec &y, vec &ydot, RObject &param, NumericVector &psens) {
 #'   NumericVector p(param);
