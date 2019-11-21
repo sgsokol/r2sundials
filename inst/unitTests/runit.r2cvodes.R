@@ -1,14 +1,10 @@
-if (file.exists(file.path(path.package("r2sundials"), "inst"))) {
-  cvodes=readLines(file.path(path.package("r2sundials"), "inst", "cvodes.txt"))
-  pincl=paste0(" -I", file.path(path.package("r2sundials"), "inst", "include"))
-} else {
-  cvodes=readLines(file.path(path.package("r2sundials"), "cvodes.txt"))
-  pincl=""
-}
+pdir=system.file(package = "r2sundials")
+cvodes <- readLines(file.path(pdir, "cvodes.txt"))
+pincl <- paste0(" -I", file.path(pdir, "include"))
 Sys.setenv(PKG_CXXFLAGS=paste0("-I", gsub("\\", "/", cvodes[1L], fixed=TRUE), pincl))
-context("Robertson")
+
 yini <- c(y1=1, y2=0, y3=0)
-neq=length(yini)
+neq <- length(yini)
 # parameters
 parms <- c(k1 = 0.04, k2 = 3e7, k3 = 1e4)
 # derivative functions
@@ -18,32 +14,13 @@ vRober <- function(y, parms) {
   dy3 <-  parms["k2"]*y[2]*y[2]
   c(dy1, dy2, dy3)
 }
-#Rober <- function(t, y, parms) {
-  
-#print(t)
-#print(y)
-#print(c(dy1, dy2, dy3))
-#  list(vRober(y, parms))
-#}
 r_rober <- function(t, y, parms, psens) vRober(y, parms)
-
-# -------------------------------------------------------
-# run at high resolution 
-# -------------------------------------------------------
 
 times <- 10^(seq(from = -5, to = 11, by = 0.1))
 
-# lsoda!
-#print (system.time(
-#out <- deSolve::ode(func = Rober, parms = parms, y = yini,
-#           times = times, atol = 1e-10, rtol = 1e-10,
-#           maxsteps = 1e5)
-#))
-
-# now sundials cvode
 # pointer to rhs function
-includes="using namespace arma;\n#include <r2sundials.h>"
-pfnd=cppXPtr(code='
+includes <- "using namespace arma;\n#include <r2sundials.h>"
+pfnd <- cppXPtr(code='
 int d_robertson(double t, const vec &y, vec &ydot, RObject &param, NumericVector &psens) {
   NumericVector p(param);
   ydot[0] = -p["k1"]*y[0] + p["k3"]*y[1]*y[2];
@@ -53,7 +30,7 @@ int d_robertson(double t, const vec &y, vec &ydot, RObject &param, NumericVector
 }
 ', depends=c("RcppArmadillo","r2sundials","rmumps"), includes=includes, cacheDir="lib", verbose=FALSE)
 # pointer to dense jacobian function
-pfnj=cppXPtr(code='
+pfnj <- cppXPtr(code='
 int jac_robertson(double t, const vec &y, vec &ydot, mat &J, RObject &param, NumericVector &psens) {
   NumericVector p(param);
   J(0, 0) = -p["k1"];
@@ -72,7 +49,7 @@ int jac_robertson(double t, const vec &y, vec &ydot, mat &J, RObject &param, Num
 ', depends=c("RcppArmadillo","r2sundials","rmumps"), includes=includes, cacheDir="lib", verbose=FALSE)
 # pointer to sparse jacobian function
 # illustrates usage of named components of param vector
-pfnspj=cppXPtr(code='
+pfnspj <- cppXPtr(code='
 int spjac_robertson(double t, const vec &y, vec &ydot, uvec &ir, uvec &pj, vec &v, int n, int nz, RObject &param, NumericVector &psens) {
   if (nz < 8)
     stop("spjac_robertson: not enough room for non zeros, must have at least 8, instead got %d", nz);
@@ -105,7 +82,7 @@ int spjac_robertson(double t, const vec &y, vec &ydot, uvec &ir, uvec &pj, vec &
 }
 ', depends=c("RcppArmadillo","r2sundials","rmumps"), includes=includes, cacheDir="lib", verbose=FALSE)
 # pointer to sensitivity1 rhs function
-pfnsens1=cppXPtr(code='
+pfnsens1 <- cppXPtr(code='
 int sens_robertson1(int Ns, double t, const vec &y, vec &ydot, int iS, vec &yS, vec &ySdot, RObject &param, NumericVector &p, vec &tmp1, vec &tmp2) {
   // calculate (∂f /∂y)s_i(t) + (∂f /∂p_i) for i = iS
   // (∂f /∂y)s_i(t)
@@ -133,41 +110,36 @@ int sens_robertson1(int Ns, double t, const vec &y, vec &ydot, int iS, vec &yS, 
 ', depends=c("RcppArmadillo","r2sundials","rmumps"), includes=includes, cacheDir="lib", verbose=FALSE)
 
 # just rhs
-#print (system.time(
 outr <- r2sundials::r2cvodes(yini, times, r_rober, param=parms)
 out0 <- r2sundials::r2cvodes(yini, times, pfnd, param=parms)
-#))
-test_that("equivalence of R and C++ rhs callbacks", {
-  expect_equivalent(out0, outr, tolerance=1.e-6)
-})
+
+test.r_vs_cpp <- function() {
+  checkEqualsNumeric(out0, outr, tolerance=1.e-6, msg="equivalence of R and C++ rhs callbacks")
+}
 # sparse Jacobian
-#print (system.time(
 out1 <- r2sundials::r2cvodes(yini, times, pfnd, param=parms, fjac=pfnspj, nz=8)
-#))
-test_that("equivalence of solution with sparse Jacobian and no explicit Jacobian", {
-  expect_equivalent(out0, out1, tolerance=1.e-6)
-})
+test.sparse <- function() {
+  checkEqualsNumeric(out0, out1, tolerance=1.e-6, msg="equivalence of solution with sparse Jacobian and internal cvodes Jacobian")
+}
 # dense Jacobian + forward sensitivity 1 by 1
-#print (system.time(
 out2 <- r2sundials::r2cvodes(yini, times, pfnd, param=parms, fjac=pfnj, Ns=3, psens=parms, fsens1=pfnsens1)
-#))
-test_that("equivalence of solutions with sparse Jacobian and dense Jacobian", {
-  expect_equivalent(out2, out1, tolerance=1.e-6)
-})
-test_that("sensitivity", {
-  expect_equal(dim(attr(out2, "sens")), c(length(yini), length(times), 3))
-})
+test.dense <- function() {
+  checkEqualsNumeric(out2, out1, tolerance=1.e-6, msg="equivalence of solutions with sparse Jacobian and dense Jacobian")
+}
+test.sensitivity <- function() {
+  checkEqualsNumeric(dim(attr(out2, "sens")), c(length(yini), length(times), 3), msg="sensitivity dimension")
+}
 
 # bouncing ball example (to illustrate discontinuties handling)
 # A ball falls from some height. At this moment, it has 0 vertical speed and some non zero horizontal speed.
 # When it hits the ground, it bounce and looses ky part of its vertical speed and kx part of the horizontal one.
 # Simulation should stop after 5th hit of the ground (unknown time point before running simulation).
 
-yinib=c(x=0, y=1, vx=0.5, vy=0) # initial values and their names
-paramb=c(g=9.81, kx=0.1, ky=0.3, nbounce=5) # usefull parameters
-timesb=seq(0, 3, length.out=101) # time points
+yinib <- c(x=0, y=1, vx=0.5, vy=0) # initial values and their names
+paramb <- c(g=9.81, kx=0.1, ky=0.3, nbounce=5) # usefull parameters
+timesb <- seq(0, 3, length.out=101) # time points
 # pointer to rhs function
-pball=cppXPtr(code='
+pball <- cppXPtr(code='
 int d_ball(double t, const vec &y, vec &ydot, RObject &param, NumericVector &psens) {
   NumericVector p(param);
   ydot[0] = y[2];
@@ -178,14 +150,14 @@ int d_ball(double t, const vec &y, vec &ydot, RObject &param, NumericVector &pse
 }
 ', depends=c("RcppArmadillo","r2sundials","rmumps"), includes=includes, cacheDir="lib", verbose=FALSE)
 # pointer to root function
-proot=cppXPtr(code='
+proot <- cppXPtr(code='
 int root_ball(double t, const vec &y, vec &vroot, RObject &param) {
   vroot[0] = y[1]; // y==0
   return(CV_SUCCESS);
 }
 ', depends=c("RcppArmadillo","r2sundials","rmumps"), includes=includes, cacheDir="lib", verbose=FALSE)
 # pointer to event handler function
-pevt=cppXPtr(code='
+pevt <- cppXPtr(code='
 int event_ball(double t, const vec &y, vec &ynew, const int Ns, std::vector<vec> ySv, ivec &rootsfound, RObject &param, NumericVector &psens) {
   NumericVector p(param);
   static int nbounce=0;
@@ -205,33 +177,33 @@ int event_ball(double t, const vec &y, vec &ynew, const int Ns, std::vector<vec>
 }
 ', depends=c("RcppArmadillo", "r2sundials", "rmumps"), includes=includes, cacheDir="lib", verbose=FALSE)
 outb <- r2sundials::r2cvodes(yinib, timesb, pball, paramb, nroot=1, froot=proot, fevent=pevt)
-test_that("root finding", {
-  expect_equal(dim(attr(outb, "roots")), c(2, 5))
-})
+test.root.cpp <- function() {
+  checkEqualsNumeric(dim(attr(outb, "roots")), c(2, 5), msg="root finding")
+}
 
 #class(outb)=class(out); plot(outb)
 
-rhs_ball_r=function(t, y, p, psens) {
-  ydot=y # same length as y
-  ydot[1] = y[3];
-  ydot[2] = y[4];
-  ydot[3] = if (y[2] > 0) 0. else -y[3] # falling till y=0 then damping
-  ydot[4] = if (y[2] > 0) -p["g"] else -y[4] # falling till y=0 then damping
+rhs_ball_r <- function(t, y, p, psens) {
+  ydot <- y # same length as y
+  ydot[1] <- y[3];
+  ydot[2] <- y[4];
+  ydot[3] <- if (y[2] > 0) 0. else -y[3] # falling till y=0 then damping
+  ydot[4] <- if (y[2] > 0) -p["g"] else -y[4] # falling till y=0 then damping
   return(ydot)
 }
-root_ball_r=function(t, y, p, psens) y[2]
+root_ball_r <- function(t, y, p, psens) y[2]
 
-event_ball_r=local({
-  nbounce=0 # workaround for static variable
+event_ball_r <- local({
+  nbounce <- 0 # workaround for static variable
   function(t, y, Ns, ySm, rootsfound, p, psens) {
     if (y[4] > 0) # we cross 0 in ascending trajectory, it can happen when y < 0 in limits of abstol
       return(list(flag=R2SUNDIALS_EVENT_IGNORE, ynew=y))
     nbounce <<- nbounce + 1
-    ynew=y;
+    ynew <- y;
     if (nbounce < p["nbounce"]) {
       # here nbounce=1:4
-      ynew[3] = ynew[3]*(1.-p["kx"]) # horizontal speed is lowered
-      ynew[4] = -ynew[4]*(1.-p["ky"]) # vertical speed is lowered and reflected
+      ynew[3] <- ynew[3]*(1.-p["kx"]) # horizontal speed is lowered
+      ynew[4] <- -ynew[4]*(1.-p["ky"]) # vertical speed is lowered and reflected
       return(list(flag=R2SUNDIALS_EVENT_HOLD, ynew=ynew))# sens_init is not set as no sensitivity is calculated
     } else {
       # here nbounce=5
@@ -240,32 +212,25 @@ event_ball_r=local({
     }
   }
 })
-#system.time(
 outbr <- r2sundials::r2cvodes(yinib, timesb, rhs_ball_r, paramb, nroot=1, froot=root_ball_r, fevent=event_ball_r)
-#)
-#class(outbr)=class(out); plot(outbr)
-test_that("root finding in R", {
-  expect_equivalent(outb, outbr)
-  expect_equal(dim(attr(outbr, "roots")), c(2, 5))
-})
+test.root.r <- function() {
+  checkEqualsNumeric(outb, outbr, msg="root finding in R")
+  checkEqualsNumeric(dim(attr(outbr, "roots")), c(2, 5), msg="dim root finding in R")
+}
 
 # decaying exp example
 # y'=-nu*(y-ylim)
 # pointer to rhs function
-pexp=cppXPtr(code='
+pexp <- cppXPtr(code='
 int d_exp(double t, const vec &y, vec &ydot, RObject &param, NumericVector &psens) {
   ydot[0] = -psens["nu"]*(y[0]-psens["lim"]);
   return(CV_SUCCESS);
 }
 ', depends=c("RcppArmadillo","r2sundials","rmumps"), includes=includes, cacheDir="lib", verbose=FALSE)
-par_exp=c("nu"=1, "lim"=1)
-ti=seq(0, 5, length.out=11)
-#system.time(
+par_exp <- c("nu"=1, "lim"=1)
+ti <- seq(0, 5, length.out=11)
 oute <- r2sundials::r2cvodes(0., ti, pexp, Ns=2, psens=par_exp)
-#)
-test_that("numeric precision", {
-  theor=par_exp["lim"]-exp(-par_exp["nu"]*ti)
-  expect_equivalent(oute[1,], theor, tolerance=1.e-6)
-})
-
-#class(oute)=class(out); plot(oute)
+test.expdecay <- function() {
+  theor <- par_exp["lim"]-exp(-par_exp["nu"]*ti)
+  checkEqualsNumeric(oute[1,], theor, tolerance=1.e-6, msg="numeric precision in exp decay")
+}

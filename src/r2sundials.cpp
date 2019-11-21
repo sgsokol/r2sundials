@@ -1,4 +1,4 @@
-#include "../inst/include/r2sundials.h"
+#include <r2sundials.h>
 //' @title Solving ODE System and Sensitivity Equations
 //'
 //' @description \code{r2cvodes} sets up necessary structures and calls \code{cvodes()} from SUNDIALS library to solve user defined ODE system \eqn{y' = f(t, y, p)}, \eqn{y(t0) = y0}, where \eqn{p} is a constant parameter vector. If requested, corresponding forward sensitivity equations \eqn{s'[i] = df/dy s[i] + df/dp[i]}, \eqn{s[i](t0) = dy0(p)/dp[i]} (here \eqn{s[i](t)=dy(t)/dp[i]}) can be solved simultaneously with the original ODE system. Root finding and proceeding can be defined as well.
