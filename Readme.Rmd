@@ -2,14 +2,14 @@
 title: "ODE and forward sensitivity solving with `r2sundials`"
 author: Serguei SOKOL
 institute:  INRA / TBI / Mathematics cell
-date: "November 18, 2019"
+date: "November 25, 2019"
 output:
   md_document:
     variant: gfm
 ---
 
 ## Introduction
-Package `r2sundials` is an RcppArmadillo wrapper for a well known and wide spread library [SUNDIALS/CVODES](https://computation.llnl.gov/sites/default/files/public/cvs_guide.pdf) from LLNL written in C. It provides an access from R to some basic features of `cvodes` routine from this library which include:
+Package `r2sundials` is an RcppArmadillo wrapper for a well known and wide spread library [SUNDIALS/CVODES](https://computation.llnl.gov/sites/default/files/public/cvs_guide.pdf) from LLNL written in C. It provides an access from R to some basic features of `cvodes` module from this library which include:
 
  - solving real valued, user defined ODE via user provided functions calculating ODE's right hand side (rhs);
  - calculating first order forward sensitivities to parameters on which ODE solution depends ;
@@ -43,7 +43,7 @@ Compared to `sundialr`, `r2sundials` provides:
  - sparse system solving is made with `rmumps` package;
  - root finding and handling;
  - some statistics of ODE methods (call number for rhs routines, number of Jacobian calculations and so on).
- - (as of time of this writing, 2019-11-18) more thorough memory management which ensures that sundials' allocated memory is freed in due way, no matter what C++ exception and in what moment could happen. This avoids potential memory leaking problem in case of frequent package use during the same session.
+ - (as of time of this writing, 2019-11-25) more thorough memory management which ensures that sundials' allocated memory is freed in due way, no matter what C++ exception and in what moment could happen. This avoids potential memory leaking problem in case of frequent package use during the same session.
  
 ## Install
 The package itself can be installed as any other CRAN or github package.
@@ -56,7 +56,7 @@ After downloading [sundials/cvodes](https://computation.llnl.gov/projects/sundia
 ```
 
 Making index size set to 32 bits will prevent additional conversion between `int64` and `int32` types each time that a sparse Jacobian is calculated by a user supplied function.
-Failing to do so will result in no compilation of `r2sundials`.
+So this option can provide some savings in calculation time but is not mandatory. User can leave the cvodes' default index size set to int64.
 User can also configure `cvodes` to use local BLAS/LAPACK libraries but this point is out of our scope.
 
 The rest of the installation procedure will be considered on two system types: Linux-like and Windows.
