@@ -1,8 +1,3 @@
-pdir=system.file(package = "r2sundials")
-cvodes <- readLines(file.path(pdir, "cvodes.txt"))
-pincl <- paste0(" -I", file.path(pdir, "include"))
-Sys.setenv(PKG_CXXFLAGS=paste0("-I", gsub("\\", "/", cvodes[1L], fixed=TRUE), pincl))
-
 yini <- c(y1=1, y2=0, y3=0)
 neq <- length(yini)
 # parameters

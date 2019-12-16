@@ -1,8 +1,0 @@
-CXX_STD = CXX11
-PKG_CXXFLAGS = -I../inst/include -I"@CVODES_INCLUDE@"
-
-PKG_LIBS = -L"@CVODES_LIBS@" -lsundials_cvodes -Wl,-rpath,"@CVODES_LIBS@" $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS)
-
-#MYCXXFLAGS=-O0 -g
-#%.o: %.cpp
-#	$(CXX) $(ALL_CPPFLAGS) $(ALL_CXXFLAGS) $(MYCXXFLAGS) -c $< -o $@

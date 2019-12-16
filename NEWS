@@ -1,3 +1,9 @@
+Version 5.0.0-2
+===============
+
+* 2019-12-12
+ - integrated CVODES-5.0.0 library into the source distribution
+
 Version 5.0.0-1
 ===============
 

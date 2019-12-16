@@ -1,18 +1,46 @@
 Package: r2sundials
 Type: Package
-Title: Rcpp Wrapper for SUNDIALS CVODES Solving Ordinary Differential Equations and Forward Sensitivity System
-Version: 5.0.0-1
-Date: 2019-11-18
-Author: Serguei Sokol
-Maintainer: Serguei Sokol <serguei.sokol@gmail.com>
-Description: Wrapper for widely used SUNDIALS cvodes function aiming to solve ODE system and optionally pending sensitivity problem. The wrapper is made R friendly by allowing to pass custom parameters to user's callback functions. Such functions can be both written in R and in C++ (Rcpp flavor). In case of C++, performance is greatly improved so this option is highly advisable when performance matters. Jacobian matrix can be provided by user either in dense or sparse format. In the latter case rmumps package is used to solve corresponding linear systems. Root finding and pending event management are optional and can be specified as R or C++ functions too. This makes them a very flexible tool for controlling the ODE system during the time course simulation. SUNDIALS library was published in Hindmarsh et al. (2005) <doi:10.1145/1089014.1089020>.
+Title: Rcpp Wrapper for SUNDIALS/CVODES Solving Ordinary Differential Equations and Forward Sensitivity Problem
+Version: 5.0.0-2
+Date: 2019-12-12
+Authors@R: c(
+   person("Serguei", "Sokol", role=c("cre", "aut"), email="sokol@insa-toulouse.fr"),
+   person("Carol S.", "Woodward", role="ctb"),
+   person("Daniel R.", "Reynolds", role="ctb"),
+   person("Alan C.", "Hindmarsh", role="ctb"),
+   person("David J.", "Gardner", role="ctb"),
+   person("Cody J.", "Balos", role="ctb"),
+   person("Radu", "Serban", role="ctb"),
+   person("Scott D.", "Cohen", role="ctb"),
+   person("Peter N.", "Brown", role="ctb"),
+   person("George", "Byrne", role="ctb"),
+   person("Allan G.", "Taylor", role="ctb"),
+   person("Steven L.", "Lee", role="ctb"),
+   person("Keith E.", "Grant", role="ctb"),
+   person("Aaron", "Collier", role="ctb"),
+   person("Lawrence E.", "Banks", role="ctb"),
+   person("Steve", "Smith", role="ctb"),
+   person("Cosmin", "Petra", role="ctb"),
+   person("Slaven", "Peles", role="ctb"),
+   person("John", "Loffeld", role="ctb"),
+   person("Dan", "Shumaker", role="ctb"),
+   person("Ulrike", "Yang", role="ctb"),
+   person("James", "Almgren-Bell", role="ctb"),
+   person("Shelby L.", "Lockhart", role="ctb"),
+   person("Hilari C.", "Tiedeman", role="ctb"),
+   person("Ting", "Yan", role="ctb"),
+   person("Jean M.", "Sexton", role="ctb"),
+   person("Chris", "White", role="ctb")
+   )
+Maintainer: Serguei Sokol <sokol@insa-toulouse.fr>
+Description: Wrapper for widely used SUNDIALS/CVODES software aiming to solve ODE system and optionally pending sensitivity problem. The wrapper is made R friendly by allowing to pass custom parameters to user's callback functions. Such functions can be both written in R and in C++ (RcppArmadillo flavor). In case of C++, performance is greatly improved so this option is highly advisable when performance matters. If provided, Jacobian matrix can be calculated either in dense or sparse format. In the latter case rmumps package is used to solve corresponding linear systems. Root finding and pending event management are optional and can be specified as R or C++ functions too. This makes them a very flexible tool for controlling the ODE system during the time course simulation. SUNDIALS library was published in Hindmarsh et al. (2005) <doi:10.1145/1089014.1089020>.
 BugReports: https://github.com/sgsokol/r2sundials/issues
 Depends: R (>= 3.0.2), rmumps (>= 5.2.1-6)
 License: GPL (>=2)
 Imports: Rcpp (>= 1.0.0)
 LinkingTo: Rcpp, RcppArmadillo, rmumps (>= 5.2.1-6)
-Suggests: RcppXPtrUtils, slam, RUnit
-SystemRequirements: SUNDIALS cvodes (>= 4.1.0)
+Suggests: RcppXPtrUtils, slam, RUnit, deSolve, RcppArmadillo
 RoxygenNote: 6.1.1
 Encoding: UTF-8
+NeedsCompilation: yes
 Biarch: FALSE

@@ -1,7 +1,8 @@
-if (requireNamespace("RUnit", quietly=TRUE) && requireNamespace("RcppXPtrUtils", quietly=TRUE) && requireNamespace("r2sundials", quietly=TRUE)) {
+if (requireNamespace("RUnit", quietly=TRUE) && requireNamespace("RcppXPtrUtils", quietly=TRUE) && requireNamespace("r2sundials", quietly=TRUE) && requireNamespace("RcppArmadillo", quietly=TRUE)) {
    library(RUnit)
    library(RcppXPtrUtils)
    library(r2sundials)
+   library(RcppArmadillo)
 
    testSuite <- defineTestSuite(
       name = "r2sundials unit tests",
