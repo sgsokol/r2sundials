@@ -822,8 +822,23 @@ void rsunerr(int error_code, const char *module, const char *function, char *msg
 #define cnst_pair(c) {#c, c}
 
 //' @title Get Predefined Constant
-//'
-//' @param s character scalar, name of the constant whoes value is to get.
+//' @description This function returns numerical value of predefined named constants. Constants defined for this package are: \itemize{
+//' \item CV_ADAMS
+//' \item CV_BDF
+//' \item CV_SIMULTANEOUS
+//' \item CV_STAGGERED
+//' \item CV_STAGGERED1
+//' \item CV_SUCCESS
+//' \item R2SUNDIALS_EVENT_HOLD
+//' \item R2SUNDIALS_EVENT_IGNORE
+//' \item R2SUNDIALS_EVENT_STOP
+//' }
+//' All these constants are exported from the package and available for use in callback functions written in R.
+//' @param s character scalar, name of the constant whose value is to get.
+//' @return integer scalar, the value of the constant named by \code{s}
+//' @examples
+//' get_cnst("CV_SUCCESS")
+//' # [1] 0
 //' @export
 // [[Rcpp::export]]
 int get_cnst(std::string s) {
