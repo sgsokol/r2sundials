@@ -1,3 +1,17 @@
+Version 5.0.0-5
+===============
+
+* 2020-03-06
+ - fixed gcc-UBSAN error about misaligned memory access
+ - fixed clan-ASAN error about stack-use-after-scope
+ - fixed unit test failure on solaris
+
+Version 5.0.0-4
+===============
+
+* 2020-01-06
+ - fixed Copyright holders in DESCRIPTION
+
 Version 5.0.0-3
 ===============
 

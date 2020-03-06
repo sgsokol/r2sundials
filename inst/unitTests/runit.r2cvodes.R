@@ -105,19 +105,19 @@ int sens_robertson1(int Ns, double t, const vec &y, vec &ydot, int iS, vec &yS, 
 ', depends=c("RcppArmadillo","r2sundials","rmumps"), includes=includes, cacheDir="lib", verbose=FALSE)
 
 # just rhs
-outr <- r2sundials::r2cvodes(yini, times, r_rober, param=parms)
-out0 <- r2sundials::r2cvodes(yini, times, pfnd, param=parms)
+outr <- r2sundials::r2cvodes(yini, times, r_rober, param=parms, maxsteps=2000)
+out0 <- r2sundials::r2cvodes(yini, times, pfnd, param=parms, maxsteps=2000)
 
 test.r_vs_cpp <- function() {
   checkEqualsNumeric(out0, outr, tolerance=1.e-6, msg="equivalence of R and C++ rhs callbacks")
 }
 # sparse Jacobian
-out1 <- r2sundials::r2cvodes(yini, times, pfnd, param=parms, fjac=pfnspj, nz=8)
+out1 <- r2sundials::r2cvodes(yini, times, pfnd, param=parms, fjac=pfnspj, nz=8, maxsteps=2000)
 test.sparse <- function() {
   checkEqualsNumeric(out0, out1, tolerance=1.e-6, msg="equivalence of solution with sparse Jacobian and internal cvodes Jacobian")
 }
 # dense Jacobian + forward sensitivity 1 by 1
-out2 <- r2sundials::r2cvodes(yini, times, pfnd, param=parms, fjac=pfnj, Ns=3, psens=parms, fsens1=pfnsens1)
+out2 <- r2sundials::r2cvodes(yini, times, pfnd, param=parms, fjac=pfnj, Ns=3, psens=parms, fsens1=pfnsens1, maxsteps=2000)
 test.dense <- function() {
   checkEqualsNumeric(out2, out1, tolerance=1.e-6, msg="equivalence of solutions with sparse Jacobian and dense Jacobian")
 }

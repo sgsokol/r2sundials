@@ -592,10 +592,8 @@ const int Ns=0, NumericVector psens=NumericVector::create(), NumericVector sens_
     checkUserInterrupt();
   }
   // final stats as attribute to output
-  IntegerVector stats(15);
-  stats.attr("names")=CharacterVector::create("NumSteps", "NumRhsEvals", "NumLinSolvSetups", "NumErrTestFails", "NumNonlinSolvIters", "NumNonlinSolvConvFails", "NumJacEvals", "NumLinRhsEvals", "NumGEvals",
-    "SensNumRhsEvals", "NumRhsEvalsSens", "SensNumLinSolvSetups", "SensNumErrTestFails", "SensNumNonlinSolvIters", "SensNumNonlinSolvConvFails"
-  );
+  std::vector<long int> stats(15, 0L);
+  // stats
   i=0;
   check_retval(CVodeGetNumSteps(cvode_mem, (long int*) &stats[i++]));
   check_retval(CVodeGetNumRhsEvals(cvode_mem, (long int*) &stats[i++]));
@@ -607,14 +605,14 @@ const int Ns=0, NumericVector psens=NumericVector::create(), NumericVector sens_
   check_retval(CVodeGetNumLinRhsEvals(cvode_mem, (long int*) &stats[i++]));
   check_retval(CVodeGetNumGEvals(cvode_mem, (long int*) &stats[i++]));
 
-  // stats and Free allocated memory
   if (Ns > 0) {
     check_retval(CVodeGetSensNumRhsEvals(cvode_mem, (long int*) &stats[i++]));
     check_retval(CVodeGetNumRhsEvalsSens(cvode_mem, (long int*) &stats[i++]));
     check_retval(CVodeGetSensNumLinSolvSetups(cvode_mem, (long int*) &stats[i++]));
     if (errconS) {
-      check_retval(CVodeGetSensNumErrTestFails(cvode_mem, (long int*) &stats[i++]));
+      check_retval(CVodeGetSensNumErrTestFails(cvode_mem, (long int*) &stats[i]));
     }
+    i++;
     if (sens_method[0] == CV_STAGGERED) {
       check_retval(CVodeGetSensNumNonlinSolvIters(cvode_mem, (long int*) &stats[i++]));
       check_retval(CVodeGetSensNumNonlinSolvConvFails(cvode_mem, (long int*) &stats[i++]));
@@ -622,6 +620,12 @@ const int Ns=0, NumericVector psens=NumericVector::create(), NumericVector sens_
     //CVodeSensFree(cvode_mem);
     //N_VDestroyVectorArray(yS, Ns);
   }
+  // convert stats to int
+  IntegerVector statsi(15);
+  std::copy(stats.begin(), stats.end(), statsi.begin());
+  statsi.attr("names")=CharacterVector::create("NumSteps", "NumRhsEvals", "NumLinSolvSetups", "NumErrTestFails", "NumNonlinSolvIters", "NumNonlinSolvConvFails", "NumJacEvals", "NumLinRhsEvals", "NumGEvals",
+    "SensNumRhsEvals", "NumRhsEvalsSens", "SensNumLinSolvSetups", "SensNumErrTestFails", "SensNumNonlinSolvIters", "SensNumNonlinSolvConvFails"
+  );
   //N_VDestroy(nv_y);
   //CVodeFree(&cvode_mem);
   //SUNLinSolFree(LS);
@@ -637,13 +641,14 @@ const int Ns=0, NumericVector psens=NumericVector::create(), NumericVector sens_
   NumericMatrix resout=wrap(res);
   resout.attr("dimnames")=List::create(colnm, CharacterVector(ti.begin(), ti.end()));
   resout.attr("times")=ti;
-  resout.attr("stats")=stats;
+  resout.attr("stats")=statsi;
   if (nroot > 0)
     resout.attr("roots")=wrap(mroots);
   if (Ns > 0)
     resout.attr("sens")=wrap(asens);
   //t2 = clock();
   //(void)printf("Temps consomme (s) : %lf \n", (double)(t2-t1)/(double)clk_tck);
+  mem.freeall();
   return(resout);
 }
 

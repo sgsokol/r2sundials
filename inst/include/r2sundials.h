@@ -40,6 +40,7 @@ public:
   void add(void **pptr, funfree f);
   void add(void **pptr, funfreep f);
   void add(void **pptr, funfree1<T> f, T arg);
+  void freeall();
 private:
   std::vector<void**> vecptr;
   std::vector<void**> vecptrp;
@@ -53,6 +54,10 @@ private:
 // serial destructor
 template<typename T>
 Sunmem<T>::~Sunmem<T>() {
+  freeall();
+}
+template<typename T>
+void Sunmem<T>::freeall() {
 /*
 Rcout << "call ~Sunmem\n";
 Rcout << "freeing\t" << vecptr.size() << " simple pointers\n";
@@ -63,12 +68,19 @@ Rcout << "freeing\t" << vecptrp.size() << " ref pointers\n";
   for (int i=vecptr.size()-1; i >= 0; i--) {
     (vecf[i])(*(vecptr[i]));
   }
+  vecptr.resize(0);
+  vecf.resize(0);
   // free simple pointers with an argument
   for (int i=vecptr1.size()-1; i >= 0; i--)
     (vecf1[i])(*(vecptr1[i]), vecarg[i]);
+  vecptr1.resize(0);
+  vecarg.resize(0);
+  vecf1.resize(0);
   // free pointers by ref
   for (int i=vecptrp.size()-1; i >= 0; i--)
     (vecfp[i])(vecptrp[i]);
+  vecptrp.resize(0);
+  vecfp.resize(0);
 }
 template<typename T>
 void Sunmem<T>::add(void **pptr, funfree f) {
