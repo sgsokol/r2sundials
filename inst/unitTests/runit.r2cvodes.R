@@ -26,7 +26,7 @@ int d_robertson(double t, const vec &y, vec &ydot, RObject &param, NumericVector
 ', depends=c("RcppArmadillo","r2sundials","rmumps"), includes=includes, cacheDir="lib", verbose=FALSE)
 # pointer to dense jacobian function
 pfnj <- cppXPtr(code='
-int jac_robertson(double t, const vec &y, vec &ydot, mat &J, RObject &param, NumericVector &psens) {
+int jac_robertson(double t, const vec &y, const vec &ydot, mat &J, RObject &param, NumericVector &psens, vec &tmp1, vec &tmp2, vec &tmp3) {
   NumericVector p(param);
   J(0, 0) = -p["k1"];
   J(1, 0) = p["k1"]; 
@@ -45,7 +45,7 @@ int jac_robertson(double t, const vec &y, vec &ydot, mat &J, RObject &param, Num
 # pointer to sparse jacobian function
 # illustrates usage of named components of param vector
 pfnspj <- cppXPtr(code='
-int spjac_robertson(double t, const vec &y, vec &ydot, uvec &ir, uvec &pj, vec &v, int n, int nz, RObject &param, NumericVector &psens) {
+int spjac_robertson(double t, const vec &y, const vec &ydot, uvec &ir, uvec &pj, vec &v, int n, int nz, RObject &param, NumericVector &psens, vec &tmp1, vec &tmp2, vec &tmp3) {
   if (nz < 8)
     stop("spjac_robertson: not enough room for non zeros, must have at least 8, instead got %d", nz);
   NumericVector prm(param);
@@ -78,7 +78,7 @@ int spjac_robertson(double t, const vec &y, vec &ydot, uvec &ir, uvec &pj, vec &
 ', depends=c("RcppArmadillo","r2sundials","rmumps"), includes=includes, cacheDir="lib", verbose=FALSE)
 # pointer to sensitivity1 rhs function
 pfnsens1 <- cppXPtr(code='
-int sens_robertson1(int Ns, double t, const vec &y, vec &ydot, int iS, vec &yS, vec &ySdot, RObject &param, NumericVector &p, vec &tmp1, vec &tmp2) {
+int sens_robertson1(int Ns, double t, const vec &y, const vec &ydot, int iS, const vec &yS, vec &ySdot, RObject &param, NumericVector &p, vec &tmp1, vec &tmp2) {
   // calculate (∂f /∂y)s_i(t) + (∂f /∂p_i) for i = iS
   // (∂f /∂y)s_i(t)
 //print(p);
@@ -146,14 +146,14 @@ int d_ball(double t, const vec &y, vec &ydot, RObject &param, NumericVector &pse
 ', depends=c("RcppArmadillo","r2sundials","rmumps"), includes=includes, cacheDir="lib", verbose=FALSE)
 # pointer to root function
 proot <- cppXPtr(code='
-int root_ball(double t, const vec &y, vec &vroot, RObject &param) {
+int root_ball(double t, const vec &y, vec &vroot, RObject &param, NumericVector &psens) {
   vroot[0] = y[1]; // y==0
   return(CV_SUCCESS);
 }
 ', depends=c("RcppArmadillo","r2sundials","rmumps"), includes=includes, cacheDir="lib", verbose=FALSE)
 # pointer to event handler function
 pevt <- cppXPtr(code='
-int event_ball(double t, const vec &y, vec &ynew, const int Ns, std::vector<vec> ySv, ivec &rootsfound, RObject &param, NumericVector &psens) {
+int event_ball(double t, const vec &y, vec &ynew, int Ns, std::vector<vec> &ySv, const ivec &rootsfound, RObject &param, NumericVector &psens) {
   NumericVector p(param);
   static int nbounce=0;
   if (y[3] > 0) // we cross 0 in ascending trajectory, it can happen when y < 0 in limits of abstol

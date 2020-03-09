@@ -238,6 +238,7 @@ SUNDIALS_EXPORT int SUNLinSolFree_RMUMPS(SUNLinearSolver S) {
     delete RMUMPS_CONTENT(S)->irp;
     delete RMUMPS_CONTENT(S)->jcp;
     rmumps::Rmumps__del_ptr(RMU(S)); // Rmumps destructor
+    delete RMUMPS_CONTENT(S)->rmu;
     free(S->content);
     S->content = NULL;
   }

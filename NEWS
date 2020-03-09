@@ -1,3 +1,11 @@
+Version 5.0.0-6
+===============
+
+* 2020-03-09
+ - fixed clan-UBSAN error about function signatures mismatching
+ - fixed clan-UBSAN error about memory leak
+ - manual page for r2cvodes() is updated for C++ function signatures passed as callback arguments
+
 Version 5.0.0-5
 ===============
 

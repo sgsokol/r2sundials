@@ -102,12 +102,12 @@ void Sunmem<T>::add(void **pptr, funfree1<T> f, T arg) {
 
 // define a type for user supplied function rhs
 typedef int (*rsunRhsFn)(double t, const vec &y, vec &ydot, RObject &param, NumericVector &psens);
-typedef int (*rsunJacFn)(double t, const vec &y, vec &ydot, mat &J, RObject &param, NumericVector &psens, vec &tmp1, vec &tmp2, vec &tmp3);
-typedef int (*rsunSpJacFn)(double t, vec &y, vec &ydot, uvec &i, uvec &p, vec &v, int n, int nz, RObject &param, NumericVector &psens, vec &tmp1, vec &tmp2, vec &tmp3);
+typedef int (*rsunJacFn)(double t, const vec &y, const vec &ydot, mat &J, RObject &param, NumericVector &psens, vec &tmp1, vec &tmp2, vec &tmp3);
+typedef int (*rsunSpJacFn)(double t, const vec &y, const vec &ydot, uvec &i, uvec &p, vec &v, int n, int nz, RObject &param, NumericVector &psens, vec &tmp1, vec &tmp2, vec &tmp3);
 typedef int (*rsunRootFn)(double t, const vec &y, vec &vroot, RObject &param, NumericVector &psens);
-typedef int (*rsunEventFn)(double t, const vec &y, vec &ynew, const int Ns, std::vector<vec> &ySv, const ivec &rootsfound, RObject &param, NumericVector &psens);
-typedef int (*rsunSensFn)(int Ns, double t, const vec &yv, const vec &ydotv, const std::vector<vec> &ySv, const std::vector<vec> &ySdotv, RObject &param, NumericVector &psens, const vec &tmp1v, const vec &tmp2v);
-typedef int (*rsunSens1Fn)(int Ns, double t, const vec &yv, const vec &ydotv, int iS, const vec &ySv, const vec &ySdotv, RObject &param, NumericVector &psens, const vec &tmp1v, const vec &tmp2v);
+typedef int (*rsunEventFn)(double t, const vec &y, vec &ynew, int Ns, std::vector<vec> &ySv, const ivec &rootsfound, RObject &param, NumericVector &psens);
+typedef int (*rsunSensFn)(int Ns, double t, const vec &yv, const vec &ydotv, const std::vector<vec> &ySv, std::vector<vec> &ySdotv, RObject &param, NumericVector &psens, const vec &tmp1v, const vec &tmp2v);
+typedef int (*rsunSens1Fn)(int Ns, double t, const vec &yv, const vec &ydotv, int iS, const vec &ySv, vec &ySdotv, RObject &param, NumericVector &psens, vec &tmp1v, vec &tmp2v);
 
 int rhswrap(realtype t, N_Vector y, N_Vector ydot, void *user_data);
 int jacwrap(realtype t, N_Vector y, N_Vector fy, SUNMatrix J, void *user_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3);
