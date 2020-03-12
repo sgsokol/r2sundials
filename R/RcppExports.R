@@ -166,8 +166,8 @@
 #' 
 #' # event handler function
 #' ptr_ball_event=cppXPtr(code='
-#' int event_ball(double t, const vec &y, vec &ynew, int Ns, std::vector<vec> &ySv, const ivec &rootsfound,
-#'                RObject &param, NumericVector &psens) {
+#' int event_ball(double t, const vec &y, vec &ynew, int Ns, std::vector<vec> &ySv,
+#'           const ivec &rootsfound, RObject &param, NumericVector &psens) {
 #'   NumericVector p(param);
 #'   static int nbounce=0;
 #'   if (rootsfound[1] != 0) // time is out
