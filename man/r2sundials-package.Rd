@@ -32,7 +32,7 @@ The version number of this package if made of CVODES original version, e.g. 5.0.
 Maintainer: \packageMaintainer{r2sundials}
 }
 \references{
-\href{https://computation.llnl.gov/sites/default/files/public/cvs_guide.pdf}{Original SUNDIALS CVODES user documentation}
+\href{https://computing.llnl.gov/}{Original SUNDIALS CVODES user documentation} (search for cvs_guide.pdf)
 }
 \keyword{ ODE }
 \keyword{ sensitivity }

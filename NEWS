@@ -1,3 +1,16 @@
+Version 5.0.0-10
+===============
+
+* 2021-05-17
+ - fixed errors form "-fno-common" compile option relative to global variables
+
+Version 5.0.0-9
+===============
+
+* 2021-03-13
+ - fixed erroneous memory freeing reported by valgrind check (run by R-core)
+ - fixed https links
+
 Version 5.0.0-7
 ===============
 

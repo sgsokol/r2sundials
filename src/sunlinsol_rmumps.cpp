@@ -135,8 +135,10 @@ SUNDIALS_EXPORT int SUNLinSolSetup_RMUMPS(SUNLinearSolver S, SUNMatrix A) {
 #endif
 //ir.print("new ir");
 //ir.print("new pc");
-  delete RMUMPS_CONTENT(S)->irp;
-  RMUMPS_CONTENT(S)->irp=new Col<MUMPS_INT>(ir+1);
+  //delete RMUMPS_CONTENT(S)->irp;
+  //RMUMPS_CONTENT(S)->irp=new Col<MUMPS_INT>(ir+1);
+  RMUMPS_CONTENT(S)->irp->resize(nz);
+  RMUMPS_CONTENT(S)->irp->subvec(0, nz-1)=ir+1;
   RMUMPS_CONTENT(S)->jcp->resize(nz);
   for (int j=1; j <= n; j++)
     RMUMPS_CONTENT(S)->jcp->subvec(pc[j-1], pc[j]-1).fill(j);

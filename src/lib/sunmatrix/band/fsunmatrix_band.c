@@ -25,11 +25,11 @@
 
 /* Define global matrix variables */
 
-SUNMatrix F2C_CVODE_matrix;
-SUNMatrix F2C_IDA_matrix;
-SUNMatrix F2C_KINSOL_matrix;
-SUNMatrix F2C_ARKODE_matrix;
-SUNMatrix F2C_ARKODE_mass_matrix;
+extern SUNMatrix F2C_CVODE_matrix;
+extern SUNMatrix F2C_IDA_matrix;
+extern SUNMatrix F2C_KINSOL_matrix;
+extern SUNMatrix F2C_ARKODE_matrix;
+extern SUNMatrix F2C_ARKODE_mass_matrix;
 
 /* Fortran callable interfaces */
 

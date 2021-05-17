@@ -43,7 +43,11 @@
 #'
 #' @return numeric matrix, ODE solution where each column corresponds to a state vector at a given time point. The columns (their number is refered to as \code{Nt}) are named by time points while the rows heritates the names from \code{yv}. If no names are found in \code{yv}, the rows are simply named 'V1', 'V2' and so on. After a normal execution and without root handling, column number is equal to the length of \code{times}. However, if root handling is used, it can add or remove some time points from  \code{times}. So the user must not assume that column number of output matrix is equal to \code{length(times)}. Instead, actual number of time points for which the solution was calculated can be retrieved from an attribute named "times".
 #' Moreover, several attributes are defined in the returned matrix. We have mentioned "times", the others are: \describe{
-#' \item{stats}{Some statistics about various events that could happen during \code{cvodes} run like the number of rhs calls, Jacobian calls, number of internal time steps, failure number and so on. Any component <name> in stats vector corresponds to SUNDIALS function pattern CVodeGet<name>, e.g. "NumRhsEvals" was obtained with CVodeGetNumRhsEvals() call. For detailed meaning of each statistics, user is invited to refer to \href{https://computation.llnl.gov/sites/default/files/public/cvs_guide.pdf}{SUNDIALS documentation};}
+#' \item{stats}{Some statistics about various events that could happen during \code{cvodes} run like the number
+#' of rhs calls, Jacobian calls, number of internal time steps, failure number and so on. Any component <name>
+#' in stats vector corresponds to SUNDIALS function pattern CVodeGet<name>, e.g. "NumRhsEvals" was obtained with
+#' CVodeGetNumRhsEvals() call. For detailed meaning of each statistics, user is invited to refer to
+#' \href{https://computing.llnl.gov/}{SUNDIALS documentation} (search for cvs_guide.pdf);}
 #' \item{roots}{matrix with row number \code{nroot+1} and column number equal to number of roots found by the \code{cvodes()} and retained by the user. Each column is a composite vector made of time point and \code{rootsfound} vector described here-before.}
 #' \item{sens}{sensitivity 3D array with dimensions \code{Neq} x \code{Nt} x \code{Ns}}
 #' }
@@ -54,7 +58,7 @@
 #' and return a derivative vector of length \code{Neq}. Here \code{t} is time point (numeric scalar), \code{y} current state vector (numeric vector of length \code{Neq}), \code{param} and \code{psens} are passed through from \code{r2cvodes()} arguments.
 #' \cr In the C++ case, it is defined as\cr
 #' \code{int (*frhs)(double t, const vec &y, vec &ydot, RObject &param, NumericVector &psens)}\cr
-#' and return an integer status flag, e.g. \code{CV_SUCCESS}. For other possible status flags see the original \href{https://computation.llnl.gov/sites/default/files/public/cvs_guide.pdf}{SUNDIALS documentation}. The derivatives are stored in-place in \code{ydot} vector. See examples section for a usage sample.
+#' and return an integer status flag, e.g. \code{CV_SUCCESS}. For other possible status flags see the original \href{https://computing.llnl.gov/}{SUNDIALS documentation} (search for cvs_guide.pdf). The derivatives are stored in-place in \code{ydot} vector. See examples section for a usage sample.
 #' \cr \code{fjac} is a function calculating Jacobian matrix. Its definition varies depending on 1) kind of used Jacobian: dense or sparse and 2) on programming language used: R or C++ (i.e. Rcpp/RcppArmadillo).
 #' \itemize{
 #' \item{For dense Jacobian calculated in R, the arguments are:\cr

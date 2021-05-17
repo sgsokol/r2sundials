@@ -1,10 +1,4 @@
-todo.txt
-gdb.txt
-NAMESPACE.empty
-NAMESPACE.save
-^.*\.save$
-^\.git.*$
-^autom.*$
 Readme.Rmd
 Readme.md
+gdb.txt
 ^rm$
