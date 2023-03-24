@@ -6,7 +6,7 @@
  *     Slaven Peles @ LLNL, and Daniel R. Reynolds @ SMU
  * -----------------------------------------------------------------
  * SUNDIALS Copyright Start
- * Copyright (c) 2002-2019, Lawrence Livermore National Security
+ * Copyright (c) 2002-2022, Lawrence Livermore National Security
  * and Southern Methodist University.
  * All rights reserved.
  *
@@ -33,8 +33,9 @@
 /* Private function prototypes */
 static booleantype SMCompatible_Sparse(SUNMatrix A, SUNMatrix B);
 static booleantype SMCompatible2_Sparse(SUNMatrix A, N_Vector x, N_Vector y);
-int Matvec_SparseCSC(SUNMatrix A, N_Vector x, N_Vector y);
-int Matvec_SparseCSR(SUNMatrix A, N_Vector x, N_Vector y);
+static int Matvec_SparseCSC(SUNMatrix A, N_Vector x, N_Vector y);
+static int Matvec_SparseCSR(SUNMatrix A, N_Vector x, N_Vector y);
+static int format_convert(const SUNMatrix A, SUNMatrix B);
 
 /*
  * -----------------------------------------------------------------
@@ -53,7 +54,8 @@ int Matvec_SparseCSR(SUNMatrix A, N_Vector x, N_Vector y);
  */
 
 SUNMatrix SUNSparseMatrix(sunindextype M, sunindextype N,
-                          sunindextype NNZ, int sparsetype)
+                          sunindextype NNZ, int sparsetype,
+                          SUNContext sunctx)
 {
   SUNMatrix A;
   SUNMatrixContent_Sparse content;
@@ -64,7 +66,7 @@ SUNMatrix SUNSparseMatrix(sunindextype M, sunindextype N,
 
   /* Create an empty matrix object */
   A = NULL;
-  A = SUNMatNewEmpty();
+  A = SUNMatNewEmpty(sunctx);
   if (A == NULL) return(NULL);
 
   /* Attach operations */
@@ -128,13 +130,15 @@ SUNMatrix SUNSparseMatrix(sunindextype M, sunindextype N,
 
 
 
+
 /* ----------------------------------------------------------------------------
  * Function to create a new sparse matrix from an existing dense matrix
  * by copying all nonzero values into the sparse matrix structure.  Returns NULL
  * if the request for matrix storage cannot be satisfied.
  */
 
-SUNMatrix SUNSparseFromDenseMatrix(SUNMatrix Ad, realtype droptol, int sparsetype)
+SUNMatrix SUNSparseFromDenseMatrix(SUNMatrix Ad, realtype droptol,
+                                   int sparsetype)
 {
   sunindextype i, j, nnz;
   sunindextype M, N;
@@ -159,7 +163,8 @@ SUNMatrix SUNSparseFromDenseMatrix(SUNMatrix Ad, realtype droptol, int sparsetyp
       nnz += (SUNRabs(SM_ELEMENT_D(Ad,i,j)) > droptol);
 
   /* allocate sparse matrix */
-  As = SUNSparseMatrix(M, N, nnz, sparsetype);
+  As = NULL;
+  As = SUNSparseMatrix(M, N, nnz, sparsetype, Ad->sunctx);
   if (As == NULL)  return NULL;
 
   /* copy nonzeros from Ad into As, based on CSR/CSC type */
@@ -223,7 +228,7 @@ SUNMatrix SUNSparseFromBandMatrix(SUNMatrix Ad, realtype droptol, int sparsetype
       nnz += (SUNRabs(SM_ELEMENT_B(Ad,i,j)) > droptol);
 
   /* allocate sparse matrix */
-  As = SUNSparseMatrix(M, N, nnz, sparsetype);
+  As = SUNSparseMatrix(M, N, nnz, sparsetype, Ad->sunctx);
   if (As == NULL)  return NULL;
 
   /* copy nonzeros from Ad into As, based on CSR/CSC type */
@@ -253,6 +258,36 @@ SUNMatrix SUNSparseFromBandMatrix(SUNMatrix Ad, realtype droptol, int sparsetype
   }
 
   return(As);
+}
+
+
+/* ----------------------------------------------------------------------------
+ * Function to create a new CSR matrix from a CSC matrix.
+ */
+int SUNSparseMatrix_ToCSR(const SUNMatrix A, SUNMatrix* Bout)
+{
+    if (A == NULL) return(SUNMAT_ILL_INPUT);
+    if (SM_SPARSETYPE_S(A) != CSC_MAT) return(SUNMAT_ILL_INPUT);
+
+    *Bout = SUNSparseMatrix(SM_ROWS_S(A), SM_COLUMNS_S(A), SM_NNZ_S(A), CSR_MAT, A->sunctx);
+    if (*Bout == NULL) return(SUNMAT_MEM_FAIL);
+
+    return format_convert(A, *Bout);
+}
+
+
+/* ----------------------------------------------------------------------------
+ * Function to create a new CSC matrix from a CSR matrix.
+ */
+int SUNSparseMatrix_ToCSC(const SUNMatrix A, SUNMatrix* Bout)
+{
+    if (A == NULL) return(SUNMAT_ILL_INPUT);
+    if (SM_SPARSETYPE_S(A) != CSR_MAT) return(SUNMAT_ILL_INPUT);
+
+    *Bout = SUNSparseMatrix(SM_ROWS_S(A), SM_COLUMNS_S(A), SM_NNZ_S(A), CSC_MAT, A->sunctx);
+    if (*Bout == NULL) return(SUNMAT_MEM_FAIL);
+
+    return format_convert(A, *Bout);
 }
 
 
@@ -441,7 +476,7 @@ SUNMatrix_ID SUNMatGetID_Sparse(SUNMatrix A)
 SUNMatrix SUNMatClone_Sparse(SUNMatrix A)
 {
   SUNMatrix B = SUNSparseMatrix(SM_ROWS_S(A), SM_COLUMNS_S(A),
-                                SM_NNZ_S(A), SM_SPARSETYPE_S(A));
+                                SM_NNZ_S(A), SM_SPARSETYPE_S(A), A->sunctx);
   return(B);
 }
 
@@ -668,7 +703,7 @@ int SUNMatScaleAddI_Sparse(realtype c, SUNMatrix A)
     /* create new matrix for sum */
     C = SUNSparseMatrix(SM_ROWS_S(A), SM_COLUMNS_S(A),
                         Ap[N] + newvals,
-                        SM_SPARSETYPE_S(A));
+                        SM_SPARSETYPE_S(A), A->sunctx);
 
     /* access data from CSR structures (return if failure) */
     Cp = Ci = NULL;
@@ -892,7 +927,7 @@ int SUNMatScaleAdd_Sparse(realtype c, SUNMatrix A, SUNMatrix B)
 
     /* create new matrix for sum */
     C = SUNSparseMatrix(SM_ROWS_S(A), SM_COLUMNS_S(A),
-                        Ap[N] + newvals, SM_SPARSETYPE_S(A));
+                        Ap[N] + newvals, SM_SPARSETYPE_S(A), A->sunctx);
 
     /* access data from CSR structures (return if failure) */
     Cp = Ci = NULL;
@@ -1130,3 +1165,72 @@ int Matvec_SparseCSR(SUNMatrix A, N_Vector x, N_Vector y)
 }
 
 
+/* -----------------------------------------------------------------
+ * Copies A into a matrix B in the opposite format of A.
+ * Returns 0 if successful, nonzero if unsuccessful.
+ */
+int format_convert(const SUNMatrix A, SUNMatrix B)
+{
+    realtype *Ax, *Bx;
+    sunindextype *Ap, *Aj;
+    sunindextype *Bp, *Bi;
+    sunindextype n_row, n_col, nnz;
+    sunindextype n, col, csum, row, last;
+
+    if (SM_SPARSETYPE_S(A) == SM_SPARSETYPE_S(B))
+      return SUNMatCopy_Sparse(A, B);
+
+    Ap = SM_INDEXPTRS_S(A);
+    Aj = SM_INDEXVALS_S(A);
+    Ax = SM_DATA_S(A);
+
+    n_row = (SM_SPARSETYPE_S(A) == CSR_MAT) ? SM_ROWS_S(A) : SM_COLUMNS_S(A);
+    n_col = (SM_SPARSETYPE_S(A) == CSR_MAT) ? SM_COLUMNS_S(A) : SM_ROWS_S(A);
+
+    Bp = SM_INDEXPTRS_S(B);
+    Bi = SM_INDEXVALS_S(B);
+    Bx = SM_DATA_S(B);
+
+    nnz = Ap[n_row];
+
+    SUNMatZero_Sparse(B);
+
+    /* compute number of non-zero entries per column (if CSR) or per row (if CSC) of A */
+    for (n = 0; n < nnz; n++)
+    {
+        Bp[Aj[n]]++;
+    }
+
+    /* cumualtive sum the nnz per column to get Bp[] */
+    for (col = 0, csum = 0; col < n_col; col++)
+    {
+        sunindextype temp  = Bp[col];
+        Bp[col] = csum;
+        csum += temp;
+    }
+    Bp[n_col] = nnz;
+
+    for (row = 0; row < n_row; row++)
+    {
+        sunindextype jj;
+        for (jj = Ap[row]; jj < Ap[row+1]; jj++)
+        {
+            sunindextype col  = Aj[jj];
+            sunindextype dest = Bp[col];
+
+            Bi[dest] = row;
+            Bx[dest] = Ax[jj];
+
+            Bp[col]++;
+        }
+    }
+
+    for (col = 0, last = 0; col <= n_col; col++)
+    {
+        sunindextype temp  = Bp[col];
+        Bp[col] = last;
+        last    = temp;
+    }
+
+    return 0;
+}

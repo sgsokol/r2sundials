@@ -1,13 +1,14 @@
 #include <sundials/sundials_math.h>
+#include <sundials/sundials_context_impl.h>
+#include <sundials/sundials_logger_impl.h>
 #include <sunlinsol_rmumps.h>
 // exported functions
 
 // Function to create a new RMUMPS linear solver
-SUNDIALS_EXPORT SUNLinearSolver SUNLinSol_RMUMPS(N_Vector y, SUNMatrix A, int  permutation=RMUMPS_PERM_AUTO) {
+SUNDIALS_EXPORT SUNLinearSolver SUNLinSol_RMUMPS(N_Vector y, SUNMatrix A, int permutation, SUNContext sunctx) {
 //Rcout << "call SUNLinSol_RMUMPS\n";
 //Rcout << "permutation=" << permutation << "\n";
   SUNLinearSolver S;
-  SUNLinearSolver_Ops ops;
   SUNLinearSolverContent_RMUMPS content;
   
   // Check compatibility with supplied SUNMatrix and N_Vector
@@ -22,44 +23,48 @@ SUNDIALS_EXPORT SUNLinearSolver SUNLinSol_RMUMPS(N_Vector y, SUNMatrix A, int  p
   int n = NV_LENGTH_S(y), nz=SM_NNZ_S(A);
   
   // Create linear solver
-  S = NULL;
-  S = (SUNLinearSolver) malloc(sizeof *S);
+  S = SUNLinSolNewEmpty(sunctx);
   if (S == NULL) return(NULL);
   
-  // Create linear solver operation structure
-  ops = NULL;
-  ops = (SUNLinearSolver_Ops) malloc(sizeof(struct _generic_SUNLinearSolver_Ops));
-  if (ops == NULL) { free(S); return(NULL); }
-
   // Attach operations
-  ops->gettype           = SUNLinSolGetType_RMUMPS;
-  ops->initialize        = SUNLinSolInitialize_RMUMPS;
-  ops->setup             = SUNLinSolSetup_RMUMPS;
-  ops->solve             = SUNLinSolSolve_RMUMPS;
-  ops->lastflag          = NULL;
-  ops->space             = NULL;
-  ops->free              = SUNLinSolFree_RMUMPS;
-  ops->setatimes         = NULL;
-  ops->setpreconditioner = NULL;
-  ops->setscalingvectors = NULL;
-  ops->numiters          = NULL;
-  ops->resnorm           = NULL;
-  ops->resid             = NULL;
-
+  S->ops->gettype           = SUNLinSolGetType_RMUMPS;
+  S->ops->getid             = NULL;
+  S->ops->setatimes         = NULL;
+  S->ops->setpreconditioner = NULL;
+  S->ops->setscalingvectors = NULL;
+  S->ops->setzeroguess      = NULL;
+  S->ops->initialize        = SUNLinSolInitialize_RMUMPS;
+  S->ops->setup             = SUNLinSolSetup_RMUMPS;
+  S->ops->solve             = SUNLinSolSolve_RMUMPS;
+  S->ops->numiters          = NULL;
+  S->ops->resnorm           = NULL;
+  S->ops->resid             = NULL;
+  S->ops->lastflag          = NULL;
+  S->ops->space             = NULL;
+  S->ops->free              = SUNLinSolFree_RMUMPS;
+  
   // Create content
   content = NULL;
   content = (SUNLinearSolverContent_RMUMPS) malloc(sizeof(struct _SUNLinearSolverContent_RMUMPS));
-  if (content == NULL) { free(ops); free(S); return(NULL); }
+  if (content == NULL) { SUNLinSolFree(S); return(NULL); }
+
+  /* Attach content */
+  S->content = content;
 
   // Fill content
   content->last_flag = 0;
   if (SUNSparseMatrix_SparseType(A) != CSC_MAT) {
+    SUNLinSolFree(S); 
     stop("SUNLinSol_RMUMPS: wrong sparse matrix type, expected CSC_MAT");
   }
-  if (n != SM_COLUMNS_S(A))
+  if (n != SM_COLUMNS_S(A)) {
+    SUNLinSolFree(S); 
     stop("SUNLinSol_RMUMPS: ncol(A) (%d) and length(y) (%d) don't concord", SM_COLUMNS_S(A), n);
-  if (SM_COLUMNS_S(A) != SM_ROWS_S(A))
+  }
+  if (SM_COLUMNS_S(A) != SM_ROWS_S(A)) {
+    SUNLinSolFree(S); 
     stop("SUNLinSol_RMUMPS: matrix is supposed to be square, instead got %dx%d", SM_ROWS_S(A), SM_COLUMNS_S(A));
+  }
   // build jcp array from irp and pc
 #if defined(SUNDIALS_INT32_T)
   ivec ir(SM_INDEXVALS_S(A), nz, false);
@@ -88,10 +93,6 @@ print(asl["j"]);
 print(asl["v"]);
 print(asl["nrow"]);
 */
-  // Attach content and ops
-  S->content = content;
-  S->ops     = ops;
-
   return(S);
 }
 

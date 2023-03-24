@@ -1,8 +1,11 @@
 # CVODES
-### Version 5.0.0 (Oct 2019)
+### Version 6.5.0 (Dec 2022)
 
-**Alan C. Hindmarsh and Radu Serban  
-  Center for Applied Scientific Computing, LLNL**
+**Alan C. Hindmarsh, Radu Serban, Cody J. Balos, David J. Gardner, 
+  and Carol S. Woodward, Center for Applied Scientific Computing, LLNL**
+
+**Daniel R. Reynolds, Department of Mathematics, Southern Methodist University**
+
 
 CVODES is a package for the solution of stiff and nonstiff ordinary differential
 equation (ODE) systems (initial value problem) given in explicit form
@@ -24,13 +27,13 @@ nonlinear solver APIs used across SUNDIALS packages.
 
 ## Documentation
 
-See the [CVODES User Guide](./doc/cvodes/cvs_guide.pdf) and
-[CVODES Examples](./doc/cvodes/cvs_examples.pdf) document for more information
+See the [CVODES User Guide](/doc/cvodes/cvs_guide.pdf) and
+[CVODES Examples](/doc/cvodes/cvs_examples.pdf) document for more information
 about CVODES usage and the provided example programs respectively.
 
 ## Installation
 
-For installation instructions see the [INSTALL_GUIDE](./INSTALL_GUIDE.pdf)
+For installation instructions see the [INSTALL_GUIDE](/INSTALL_GUIDE.pdf)
 or the "Installation Procedure" chapter in the CVODES User Guide.
 
 ## Release History
@@ -41,11 +44,12 @@ the "SUNDIALS Release History" appendix of the CVODES User Guide.
 
 ## References
 
-* A. C. Hindmarsh and R. Serban, "User Documentation for CVODES v5.0.0,"
-  LLNL technical report UCRL-SM-208111, Oct 2019.
+* A. C. Hindmarsh, R. Serban, C. J. Balos, D. J. Gardner, D. R. Reynolds
+  and C. S. Woodward, "User Documentation for CVODES v6.5.0,"
+  LLNL technical report UCRL-SM-208111, Dec 2022.
 
-* A. C. Hindmarsh and R. Serban, "Example Programs for CVODES v5.0.0,"
-  LLNL technical report UCRL-SM-208115, Oct 2019.
+* A. C. Hindmarsh and R. Serban, "Example Programs for CVODES v6.5.0,"
+  LLNL technical report UCRL-SM-208115, Dec 2022.
 
 * R. Serban and A. C. Hindmarsh, "CVODES: the Sensitivity-Enabled ODE
   solver in SUNDIALS," Proceedings of IDETC/CIE 2005, Sept. 2005,

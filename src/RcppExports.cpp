@@ -7,6 +7,11 @@
 
 using namespace Rcpp;
 
+#ifdef RCPP_USE_GLOBAL_ROSTREAM
+Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
+Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
+#endif
+
 // r2cvodes
 NumericMatrix r2cvodes(const NumericVector& yv, const vec& times, const RObject& frhs, RObject param, const NumericVector tstop, const double abstol, const double reltol, IntegerVector integrator, const int maxord, const int maxsteps, const double hin, const double hmax, const double hmin, const vec& constraints, const RObject fjac, const int nz, IntegerVector rmumps_perm, const int nroot, const RObject froot, const RObject fevent, const int Ns, NumericVector psens, NumericVector sens_init, NumericVector psens_bar, const IntegerVector psens_list, const RObject fsens, const RObject fsens1, IntegerVector sens_method, const bool errconS);
 RcppExport SEXP _r2sundials_r2cvodes(SEXP yvSEXP, SEXP timesSEXP, SEXP frhsSEXP, SEXP paramSEXP, SEXP tstopSEXP, SEXP abstolSEXP, SEXP reltolSEXP, SEXP integratorSEXP, SEXP maxordSEXP, SEXP maxstepsSEXP, SEXP hinSEXP, SEXP hmaxSEXP, SEXP hminSEXP, SEXP constraintsSEXP, SEXP fjacSEXP, SEXP nzSEXP, SEXP rmumps_permSEXP, SEXP nrootSEXP, SEXP frootSEXP, SEXP feventSEXP, SEXP NsSEXP, SEXP psensSEXP, SEXP sens_initSEXP, SEXP psens_barSEXP, SEXP psens_listSEXP, SEXP fsensSEXP, SEXP fsens1SEXP, SEXP sens_methodSEXP, SEXP errconSSEXP) {

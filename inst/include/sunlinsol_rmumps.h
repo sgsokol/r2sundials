@@ -8,6 +8,7 @@
 using namespace Rcpp;
 using namespace arma;
 
+#include <sundials/sundials_context_impl.h>
 #include <sundials/sundials_linearsolver.h>
 #include <sundials/sundials_matrix.h>
 #include <sundials/sundials_nvector.h>
@@ -50,7 +51,7 @@ struct _SUNLinearSolverContent_RMUMPS {
 #undef SUNDIALS_EXPORT
 #define SUNDIALS_EXPORT
 typedef struct _SUNLinearSolverContent_RMUMPS *SUNLinearSolverContent_RMUMPS;
-SUNDIALS_EXPORT SUNLinearSolver SUNLinSol_RMUMPS(N_Vector y, SUNMatrix A, int permutation);
+SUNDIALS_EXPORT SUNLinearSolver SUNLinSol_RMUMPS(N_Vector y, SUNMatrix A, int permutation, SUNContext sunctx);
 SUNDIALS_EXPORT int SUNLinSol_RMUMPSSetOrdering(SUNLinearSolver S, std::string ordering_choice);
   
 /*

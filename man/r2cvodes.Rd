@@ -198,7 +198,8 @@ int rhs_exp(double t, const vec &y, vec &ydot, RObject &param, NumericVector &ps
   return(CV_SUCCESS);
 }
 ', depends=c("RcppArmadillo","r2sundials","rmumps"),
- includes="using namespace arma;\n#include <r2sundials.h>", cacheDir="lib", verbose=FALSE)
+ includes=c("// [[Rcpp::plugins(cpp14)]]", "using namespace arma;", "#include <r2sundials.h>"), 
+ cacheDir="lib", verbose=FALSE)
 # For ease of use in C++, we convert param to a numeric vector instead of a list.
 pv=c(a=p$a)
 # new call to r2cvodes() with XPtr pointer ptr_exp.
@@ -230,7 +231,8 @@ int rhs_ball(double t, const vec &y, vec &ydot, RObject &param, NumericVector &p
   return(CV_SUCCESS);
 }
 ', depends=c("RcppArmadillo","r2sundials","rmumps"),
- includes="using namespace arma;\n#include <r2sundials.h>", cacheDir="lib", verbose=FALSE)
+ includes=c("// [[Rcpp::plugins(cpp14)]]", "using namespace arma;", "#include <r2sundials.h>"), 
+ cacheDir="lib", verbose=FALSE)
 
 # root function
 ptr_ball_root=cppXPtr(code='
@@ -241,7 +243,8 @@ int root_ball(double t, const vec &y, vec &vroot, RObject &param, NumericVector 
   return(0);
 }
 ', depends=c("RcppArmadillo","r2sundials","rmumps"),
- includes="using namespace arma;\n#include <r2sundials.h>", cacheDir="lib", verbose=FALSE)
+ includes=c("// [[Rcpp::plugins(cpp14)]]", "using namespace arma;", "#include <r2sundials.h>"), 
+ cacheDir="lib", verbose=FALSE)
 
 # event handler function
 ptr_ball_event=cppXPtr(code='
@@ -267,7 +270,8 @@ int event_ball(double t, const vec &y, vec &ynew, int Ns, std::vector<vec> &ySv,
   }
 }
 ', depends=c("RcppArmadillo","r2sundials","rmumps"),
- includes="using namespace arma;\n#include <r2sundials.h>", cacheDir="lib", verbose=FALSE)
+ includes=c("// [[Rcpp::plugins(cpp14)]]", "using namespace arma;", "#include <r2sundials.h>"), 
+ cacheDir="lib", verbose=FALSE)
 
 # ODE solving and plotting
 res_ball <- r2sundials::r2cvodes(yv, ti, ptr_ball, param=pv, nroot=2L,
@@ -308,7 +312,8 @@ int rhs_rob(double t, const vec &y, vec &ydot, RObject &param, NumericVector &ps
   return(CV_SUCCESS);
 }
 ', depends=c("RcppArmadillo","r2sundials","rmumps"),
- includes="using namespace arma;\n#include <r2sundials.h>", cacheDir="lib", verbose=FALSE)
+ includes=c("// [[Rcpp::plugins(cpp14)]]", "using namespace arma;", "#include <r2sundials.h>"), 
+ cacheDir="lib", verbose=FALSE)
 # pointer to sparse jacobian function
 ptr_rob_jacsp=cppXPtr(code='
 int spjac_rob(double t, const vec &y, const vec &ydot, uvec &ir, uvec &pj, vec &v, int n, int nz,
@@ -343,7 +348,8 @@ int spjac_rob(double t, const vec &y, const vec &ydot, uvec &ir, uvec &pj, vec &
   return(0);
 }
 ', depends=c("RcppArmadillo","r2sundials","rmumps"),
- includes="using namespace arma;\n#include <r2sundials.h>", cacheDir="lib", verbose=FALSE)
+ includes=c("// [[Rcpp::plugins(cpp14)]]", "using namespace arma;", "#include <r2sundials.h>"), 
+ cacheDir="lib", verbose=FALSE)
 # pointer to sensitivity rhs function
 ptr_rob_sens1=cppXPtr(code='
 int sens_rob1(int Ns, double t, const vec &y, const vec &ydot, int iS, const vec &yS, vec &ySdot,
@@ -371,7 +377,8 @@ int sens_rob1(int Ns, double t, const vec &y, const vec &ydot, int iS, const vec
   return(CV_SUCCESS);
 }
 ', depends=c("RcppArmadillo","r2sundials","rmumps"),
- includes="using namespace arma;\n#include <r2sundials.h>", cacheDir="lib", verbose=FALSE)
+ includes=c("// [[Rcpp::plugins(cpp14)]]", "using namespace arma;", "#include <r2sundials.h>"), 
+ cacheDir="lib", verbose=FALSE)
 # Note that we don't use psens param for sensitivity calculations as we provide our own fsens1.
 res_rob <- r2sundials::r2cvodes(yv, ti, ptr_rob, param=pv, nz=8, fjac=ptr_rob_jacsp, Ns=3,
                               fsens1=ptr_rob_sens1)
