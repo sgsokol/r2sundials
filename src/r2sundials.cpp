@@ -566,7 +566,7 @@ const int Ns=0, NumericVector psens=NumericVector::create(), NumericVector sens_
       if (retevent == R2SUNDIALS_EVENT_IGNORE) {
         ; // do nothing
       } else {
-        mroots.insert_cols(mroots.n_cols, 1, false);
+        mroots.insert_cols(mroots.n_cols, 1);
         mroots.col(mroots.n_cols-1)[0]=t;
         mroots.col(mroots.n_cols-1).subvec(1, nroot)=conv_to<vec>::from(rootsfound);
         // insert this time point and current state
@@ -576,7 +576,7 @@ const int Ns=0, NumericVector psens=NumericVector::create(), NumericVector sens_
           res.insert_cols(iout+insroot, yvec);
           if (Ns > 0) {
             CVodeGetSens(cvode_mem, &t, yS);
-            asens.insert_cols(iout+insroot, 1, false);
+            asens.insert_cols(iout+insroot, 1);
             for (int is=0; is < Ns; is++)
               asens.slice(is).col(iout+insroot)=ySv[is];
           }
@@ -589,7 +589,7 @@ const int Ns=0, NumericVector psens=NumericVector::create(), NumericVector sens_
           res.insert_cols(iout+insroot, ynew);
           if (Ns > 0) {
             // reinit yS to ySv
-            asens.insert_cols(iout+insroot, 1, false);
+            asens.insert_cols(iout+insroot, 1);
             for (int is=0; is < Ns; is++) {
               asens.slice(is).col(iout+insroot)=ySv[is];
             }
