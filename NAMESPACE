@@ -1,3 +1,4 @@
+export(R2cpp)
 export(r2cvodes)
 export(get_cnst)
 exportPattern("^CV_.+")

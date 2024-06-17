@@ -42,7 +42,7 @@ Description: Wrapper for widely used 'SUNDIALS' software (SUite of Nonlinear and
 BugReports: https://github.com/sgsokol/r2sundials/issues
 Depends: R (>= 3.0.2), rmumps (>= 5.2.1-6)
 License: GPL (>=2)
-Imports: Rcpp (>= 1.0.0)
+Imports: Rcpp (>= 1.0.0), ast2ast
 LinkingTo: Rcpp, RcppArmadillo, rmumps (>= 5.2.1-6)
 Suggests: RcppXPtrUtils, slam, RUnit, deSolve, RcppArmadillo
 RoxygenNote: 7.2.3
