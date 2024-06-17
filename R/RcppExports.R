@@ -124,7 +124,7 @@
 #' }
 #' ', depends=c("RcppArmadillo","r2sundials","rmumps"),
 #'  includes=c("// [[Rcpp::plugins(cpp14)]]", "using namespace arma;", "#include <r2sundials.h>"), 
-#'  cacheDir="lib", verbose=FALSE)
+#'  verbose=FALSE) # use 'cacheDir="<yourdir>"' to keep compilation results between R sessions.
 #' # For ease of use in C++, we convert param to a numeric vector instead of a list.
 #' pv=c(a=p$a)
 #' # new call to r2cvodes() with XPtr pointer ptr_exp.
@@ -157,7 +157,7 @@
 #' }
 #' ', depends=c("RcppArmadillo","r2sundials","rmumps"),
 #'  includes=c("// [[Rcpp::plugins(cpp14)]]", "using namespace arma;", "#include <r2sundials.h>"), 
-#'  cacheDir="lib", verbose=FALSE)
+#'  verbose=FALSE) # use 'cacheDir="<yourdir>"' to keep compilation results between R sessions.
 #' 
 #' # root function
 #' ptr_ball_root=cppXPtr(code='
@@ -169,7 +169,7 @@
 #' }
 #' ', depends=c("RcppArmadillo","r2sundials","rmumps"),
 #'  includes=c("// [[Rcpp::plugins(cpp14)]]", "using namespace arma;", "#include <r2sundials.h>"), 
-#'  cacheDir="lib", verbose=FALSE)
+#'  verbose=FALSE) # use 'cacheDir="<yourdir>"' to keep compilation results between R sessions.
 #' 
 #' # event handler function
 #' ptr_ball_event=cppXPtr(code='
@@ -196,7 +196,7 @@
 #' }
 #' ', depends=c("RcppArmadillo","r2sundials","rmumps"),
 #'  includes=c("// [[Rcpp::plugins(cpp14)]]", "using namespace arma;", "#include <r2sundials.h>"), 
-#'  cacheDir="lib", verbose=FALSE)
+#'  verbose=FALSE) # use 'cacheDir="<yourdir>"' to keep compilation results between R sessions.
 #'
 #' # ODE solving and plotting
 #' res_ball <- r2sundials::r2cvodes(yv, ti, ptr_ball, param=pv, nroot=2L,
@@ -238,7 +238,7 @@
 #' }
 #' ', depends=c("RcppArmadillo","r2sundials","rmumps"),
 #'  includes=c("// [[Rcpp::plugins(cpp14)]]", "using namespace arma;", "#include <r2sundials.h>"), 
-#'  cacheDir="lib", verbose=FALSE)
+#'  verbose=FALSE) 
 #' # pointer to sparse jacobian function
 #' ptr_rob_jacsp=cppXPtr(code='
 #' int spjac_rob(double t, const vec &y, const vec &ydot, uvec &ir, uvec &pj, vec &v, int n, int nz,
@@ -274,7 +274,7 @@
 #' }
 #' ', depends=c("RcppArmadillo","r2sundials","rmumps"),
 #'  includes=c("// [[Rcpp::plugins(cpp14)]]", "using namespace arma;", "#include <r2sundials.h>"), 
-#'  cacheDir="lib", verbose=FALSE)
+#'  verbose=FALSE) # use 'cacheDir="<yourdir>"' to keep compilation results between R sessions.
 #' # pointer to sensitivity rhs function
 #' ptr_rob_sens1=cppXPtr(code='
 #' int sens_rob1(int Ns, double t, const vec &y, const vec &ydot, int iS, const vec &yS, vec &ySdot,
@@ -303,7 +303,7 @@
 #' }
 #' ', depends=c("RcppArmadillo","r2sundials","rmumps"),
 #'  includes=c("// [[Rcpp::plugins(cpp14)]]", "using namespace arma;", "#include <r2sundials.h>"), 
-#'  cacheDir="lib", verbose=FALSE)
+#'  verbose=FALSE) # use 'cacheDir="<yourdir>"' to keep compilation results between R sessions.
 #' # Note that we don't use psens param for sensitivity calculations as we provide our own fsens1.
 #' res_rob <- r2sundials::r2cvodes(yv, ti, ptr_rob, param=pv, nz=8, fjac=ptr_rob_jacsp, Ns=3,
 #'                               fsens1=ptr_rob_sens1)

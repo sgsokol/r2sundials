@@ -1,12 +1,5 @@
-todo.txt
+.gitignore
+.git/.*
+^Readme.*
+rm/.*
 gdb.txt
-NAMESPACE.empty
-NAMESPACE.save
-^.*\.save$
-^\.git.*$
-^autom.*$
-Readme.Rmd
-Readme.md
-^rm$
-^.*\.toremove$
-lib-5.0.0

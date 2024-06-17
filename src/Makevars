@@ -1,6 +1,6 @@
 #CXX_STD = CXX14
 #PKG_CFLAGS = -fno-common
-PKG_CPPFLAGS = -I../inst/include -I ../inst/include/sundials -DNO_FPRINTF_OUTPUT # 
+PKG_CPPFLAGS = -I../inst/include -I ../inst/include/sundials -DNO_FPRINTF_OUTPUT -DARMA_IGNORE_DEPRECATED_MARKER # 
 
 PKG_LIBS = -L../inst -lsundials $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS)
 

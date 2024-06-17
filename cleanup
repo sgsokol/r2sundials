@@ -3,5 +3,5 @@
 ## a.out.dSYM may get created on OS X.
 d=$(dirname $0)
 #echo d=$d
-find "$d" \( -name '*.o' -o -name '*.so' -o -name '*.a' -o -name '*.dll'-o -name '.R*' \)  -exec rm -f {} \;
+find "$d" \( -name '*.o' -o -name '*.so' -o -name '*.a' -o -name '*.dll' -o -name '*.RData' \)  -exec rm -f {} \;
 rm -rf $d/lib/
