@@ -1,8 +1,24 @@
-Version 5.0.0-10
+Version 6.5.0-4
 ===============
 
+* 2023-12-08
+ - fixed warnings "-Wdeprecated-declarations" from RcppArmadillo (reported by CRAN team)
+ - added .Rbuildignore
+ - fixed html links
+
+Version 6.5.0-3
+===============
+
+* 2023-03-21
+ - passed to v6.5.0 of SUNDIALS library
+ - fixed warnings from "-Wstrict-prototypes" (reported by R-core)
+ - updated CIATION format
+
+Version 5.0.0-10
+================
+
 * 2021-05-17
- - fixed errors form "-fno-common" compile option relative to global variables
+ - fixed errors from "-fno-common" compile option relative to global variables (reported by R-core)
 
 Version 5.0.0-9
 ===============

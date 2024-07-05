@@ -121,7 +121,8 @@
 //'   return(CV_SUCCESS);
 //' }
 //' ', depends=c("RcppArmadillo","r2sundials","rmumps"),
-//'  includes="using namespace arma;\n#include <r2sundials.h>", cacheDir="lib", verbose=FALSE)
+//'  includes=c("// [[Rcpp::plugins(cpp14)]]", "using namespace arma;", "#include <r2sundials.h>"), 
+//'  verbose=FALSE) # use 'cacheDir="<yourdir>"' to keep compilation results between R sessions.
 //' # For ease of use in C++, we convert param to a numeric vector instead of a list.
 //' pv=c(a=p$a)
 //' # new call to r2cvodes() with XPtr pointer ptr_exp.
@@ -153,7 +154,8 @@
 //'   return(CV_SUCCESS);
 //' }
 //' ', depends=c("RcppArmadillo","r2sundials","rmumps"),
-//'  includes="using namespace arma;\n#include <r2sundials.h>", cacheDir="lib", verbose=FALSE)
+//'  includes=c("// [[Rcpp::plugins(cpp14)]]", "using namespace arma;", "#include <r2sundials.h>"), 
+//'  verbose=FALSE) # use 'cacheDir="<yourdir>"' to keep compilation results between R sessions.
 //' 
 //' # root function
 //' ptr_ball_root=cppXPtr(code='
@@ -164,7 +166,8 @@
 //'   return(0);
 //' }
 //' ', depends=c("RcppArmadillo","r2sundials","rmumps"),
-//'  includes="using namespace arma;\n#include <r2sundials.h>", cacheDir="lib", verbose=FALSE)
+//'  includes=c("// [[Rcpp::plugins(cpp14)]]", "using namespace arma;", "#include <r2sundials.h>"), 
+//'  verbose=FALSE) # use 'cacheDir="<yourdir>"' to keep compilation results between R sessions.
 //' 
 //' # event handler function
 //' ptr_ball_event=cppXPtr(code='
@@ -190,7 +193,8 @@
 //'   }
 //' }
 //' ', depends=c("RcppArmadillo","r2sundials","rmumps"),
-//'  includes="using namespace arma;\n#include <r2sundials.h>", cacheDir="lib", verbose=FALSE)
+//'  includes=c("// [[Rcpp::plugins(cpp14)]]", "using namespace arma;", "#include <r2sundials.h>"), 
+//'  verbose=FALSE) # use 'cacheDir="<yourdir>"' to keep compilation results between R sessions.
 //'
 //' # ODE solving and plotting
 //' res_ball <- r2sundials::r2cvodes(yv, ti, ptr_ball, param=pv, nroot=2L,
@@ -231,7 +235,8 @@
 //'   return(CV_SUCCESS);
 //' }
 //' ', depends=c("RcppArmadillo","r2sundials","rmumps"),
-//'  includes="using namespace arma;\n#include <r2sundials.h>", cacheDir="lib", verbose=FALSE)
+//'  includes=c("// [[Rcpp::plugins(cpp14)]]", "using namespace arma;", "#include <r2sundials.h>"), 
+//'  verbose=FALSE) 
 //' # pointer to sparse jacobian function
 //' ptr_rob_jacsp=cppXPtr(code='
 //' int spjac_rob(double t, const vec &y, const vec &ydot, uvec &ir, uvec &pj, vec &v, int n, int nz,
@@ -266,7 +271,8 @@
 //'   return(0);
 //' }
 //' ', depends=c("RcppArmadillo","r2sundials","rmumps"),
-//'  includes="using namespace arma;\n#include <r2sundials.h>", cacheDir="lib", verbose=FALSE)
+//'  includes=c("// [[Rcpp::plugins(cpp14)]]", "using namespace arma;", "#include <r2sundials.h>"), 
+//'  verbose=FALSE) # use 'cacheDir="<yourdir>"' to keep compilation results between R sessions.
 //' # pointer to sensitivity rhs function
 //' ptr_rob_sens1=cppXPtr(code='
 //' int sens_rob1(int Ns, double t, const vec &y, const vec &ydot, int iS, const vec &yS, vec &ySdot,
@@ -294,7 +300,8 @@
 //'   return(CV_SUCCESS);
 //' }
 //' ', depends=c("RcppArmadillo","r2sundials","rmumps"),
-//'  includes="using namespace arma;\n#include <r2sundials.h>", cacheDir="lib", verbose=FALSE)
+//'  includes=c("// [[Rcpp::plugins(cpp14)]]", "using namespace arma;", "#include <r2sundials.h>"), 
+//'  verbose=FALSE) # use 'cacheDir="<yourdir>"' to keep compilation results between R sessions.
 //' # Note that we don't use psens param for sensitivity calculations as we provide our own fsens1.
 //' res_rob <- r2sundials::r2cvodes(yv, ti, ptr_rob, param=pv, nz=8, fjac=ptr_rob_jacsp, Ns=3,
 //'                               fsens1=ptr_rob_sens1)
@@ -316,6 +323,7 @@ const int Ns=0, NumericVector psens=NumericVector::create(), NumericVector sens_
   //long clk_tck = CLOCKS_PER_SEC;
   //clock_t t1, t2;
   //t1 = clock();
+  SUNContext sunctx;
   Sunmem<int> mem;
   UserData udata;
   realtype t;
@@ -327,7 +335,7 @@ const int Ns=0, NumericVector psens=NumericVector::create(), NumericVector sens_
   mat res, mroots, msens_init, msens;
   vec ti;
   cube asens;
-  Function rf_event(Environment::global_env()["ls"]); // just a placeholder
+  Function rf_event(Environment::namespace_env("base")["ls"]); // just a placeholder
   rsunEventFn user_event_fn=NULL;
 
   if (integrator.size() == 0)
@@ -358,8 +366,11 @@ const int Ns=0, NumericVector psens=NumericVector::create(), NumericVector sens_
   asens.set_size(neq, nti, Ns);
   std::vector<vec> ySv(Ns);
   
+  /* Create the SUNDIALS context that all SUNDIALS objects require */
+  check_retval(SUNContext_Create(NULL, &sunctx));
+  mem.add((void **) &sunctx, (funfree) SUNContext_Free);
   /* Create serial vector of length neq from yv (initial conditions)*/
-  getmem(nv_y, N_VNew_Serial(neq));
+  getmem(nv_y, N_VNew_Serial(neq, sunctx));
   mem.add((void **) &nv_y, (funfree) N_VDestroy);
   vec yvec(NV_DATA_S(nv_y), neq, false), ynew; // vec proxy for y and y after event treatment by user function
   // copy init values
@@ -370,7 +381,7 @@ const int Ns=0, NumericVector psens=NumericVector::create(), NumericVector sens_
 //Rcout << "yvec.memptr()=" << yvec.memptr() << "\n";
   
   // create the solver memory and specify the Backward Differentiation Formula
-  getmem(cvode_mem, CVodeCreate(integrator[0]));
+  getmem(cvode_mem, CVodeCreate(integrator[0], sunctx));
   mem.add((void **) &cvode_mem, (funfreep) CVodeFree);
   check_retval(CVodeSetErrHandlerFn(cvode_mem, rsunerr, NULL));
   // Set cvode_mem and put different solver components
@@ -398,7 +409,7 @@ const int Ns=0, NumericVector psens=NumericVector::create(), NumericVector sens_
       if (ita != 0. && ita != 1. && ita != 2.)
         stop("cvode: values in constraints must be 0, ±1 or ±2, instead %g found", it);
     }
-    getmem(nv_constraints, N_VNewEmpty_Serial(neq));
+    getmem(nv_constraints, N_VNewEmpty_Serial(neq, sunctx));
     mem.add((void **) &nv_constraints, (funfree) N_VDestroy);
     NV_DATA_S(nv_constraints) = (realtype *) constraints.begin();
     check_retval(CVodeSetConstraints(cvode_mem, nv_constraints));
@@ -408,18 +419,18 @@ const int Ns=0, NumericVector psens=NumericVector::create(), NumericVector sens_
   if (nz > 0) {
     if (fjac.isNULL())
       stop("cvode: fjac must not be NULL if nz > 0 (%d)", nz);
-    getmem(A, SUNSparseMatrix(neq, neq, nz, CSC_MAT));
+    getmem(A, SUNSparseMatrix(neq, neq, nz, CSC_MAT, sunctx));
     mem.add((void **) &A, (funfree) SUNMatDestroy);
-    getmem(LS, SUNLinSol_RMUMPS(nv_y, A, rmumps_perm[0]));
+    getmem(LS, SUNLinSol_RMUMPS(nv_y, A, rmumps_perm[0], sunctx));
     mem.add((void **) &LS, (funfree) SUNLinSolFree);
     check_retval(CVodeSetLinearSolver(cvode_mem, LS, A));
     check_retval(CVodeSetJacFn(cvode_mem, spjacwrap)); //jacsps)); //
   } else {
     // dense SUNMatrix for use in linear solves
-    getmem(A, SUNDenseMatrix(neq, neq));
+    getmem(A, SUNDenseMatrix(neq, neq, sunctx));
     mem.add((void **) &A, (funfree) SUNMatDestroy);
     // dense SUNLinearSolver object
-    getmem(LS, SUNLinSol_Dense(nv_y, A));
+    getmem(LS, SUNLinSol_Dense(nv_y, A, sunctx));
     mem.add((void **) &LS, (funfree) SUNLinSolFree);
     check_retval(CVodeSetLinearSolver(cvode_mem, LS, A));
     if (!fjac.isNULL())
@@ -487,7 +498,7 @@ const int Ns=0, NumericVector psens=NumericVector::create(), NumericVector sens_
     else
       msens_init=zeros<mat>(neq, Ns);
 //msens_init.print("msens_init");
-    yS = N_VCloneVectorArray_Serial(Ns, nv_y);
+    yS = N_VCloneVectorArray(Ns, nv_y);
     mem.add((void **) &yS, (funfree1<int>) N_VDestroyVectorArray, (int) Ns);
     for (int is=0; is < Ns; is++) {
       ySv[is]=vec(NV_DATA_S(yS[is]), neq, false); // vec proxies of yS "matrix"
@@ -555,7 +566,7 @@ const int Ns=0, NumericVector psens=NumericVector::create(), NumericVector sens_
       if (retevent == R2SUNDIALS_EVENT_IGNORE) {
         ; // do nothing
       } else {
-        mroots.insert_cols(mroots.n_cols, 1, false);
+        mroots.insert_cols(mroots.n_cols, 1);
         mroots.col(mroots.n_cols-1)[0]=t;
         mroots.col(mroots.n_cols-1).subvec(1, nroot)=conv_to<vec>::from(rootsfound);
         // insert this time point and current state
@@ -565,7 +576,7 @@ const int Ns=0, NumericVector psens=NumericVector::create(), NumericVector sens_
           res.insert_cols(iout+insroot, yvec);
           if (Ns > 0) {
             CVodeGetSens(cvode_mem, &t, yS);
-            asens.insert_cols(iout+insroot, 1, false);
+            asens.insert_cols(iout+insroot, 1);
             for (int is=0; is < Ns; is++)
               asens.slice(is).col(iout+insroot)=ySv[is];
           }
@@ -578,7 +589,7 @@ const int Ns=0, NumericVector psens=NumericVector::create(), NumericVector sens_
           res.insert_cols(iout+insroot, ynew);
           if (Ns > 0) {
             // reinit yS to ySv
-            asens.insert_cols(iout+insroot, 1, false);
+            asens.insert_cols(iout+insroot, 1);
             for (int is=0; is < Ns; is++) {
               asens.slice(is).col(iout+insroot)=ySv[is];
             }

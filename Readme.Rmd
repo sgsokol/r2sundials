@@ -12,17 +12,17 @@ output:
 R --vanilla -e "rmarkdown::render('Readme.Rmd')"
 -->
 ## Introduction
-Package `r2sundials` is an RcppArmadillo wrapper for a well known and wide spread library [SUNDIALS/CVODES](https://computation.llnl.gov/sites/default/files/public/cvs_guide.pdf) from LLNL written in C. It provides an access from R to some basic features of `cvodes` module from this library which include:
+Package `r2sundials` is an RcppArmadillo wrapper for a well known and wide spread library [SUNDIALS/CVODES](https://computing.llnl.gov/projects/sundials/cvodes) from LLNL written in C. It provides an access from R to some basic features of `cvodes` module from this library which include:
 
  - solving real valued, user defined ODE via user provided functions calculating ODE's right hand side (rhs);
  - calculating first order forward sensitivities to parameters on which ODE solution depends ;
  - setting key parameters for ODE solving method like explicit or implicit time scheme, minimal or maximal steps, error order etc.
  
-Note that user has to install [SUNDIALS/CVODES](https://computation.llnl.gov/projects/sundials/cvodes) by his own means (cf. [Install] section)
+There is a copy of [SUNDIALS/CVODES](https://computing.llnl.gov/projects/sundials/cvodes) distributed with this package. So the package can be used just from its installation.
 
 ## Why another ODE solver for R?
 
-The question is legitimate as there is already very furnished package [deSolve](https://cran.r-project.org/package=deSolve). It was also published [Rsundials](https://cran.r-project.org/web/packages/Rsundials/index.html) package but it is archived now since 2017-03-26. There is a fresh wrapper to the same library [sundialr](https://cran.r-project.org/package=sundialr). You can find even more packages dedicated to ODE solving in this [task view](https://cran.r-project.org/web/views/DifferentialEquations.html). So why a new wrapper?
+The question is legitimate as there is already very furnished package [deSolve](https://cran.r-project.org/package=deSolve). It was also published [Rsundials](https://cran.r-project.org/package=Rsundials) package but it is archived since 2017-03-26. There is a fresh wrapper to the same library [sundialr](https://cran.r-project.org/package=sundialr). You can find even more packages dedicated to ODE solving in this [task view](https://CRAN.R-project.org/view=DifferentialEquations). So why a new wrapper?
 Let see what are the novelties brought by `r2sundials` compared to most close alternatives: `deSolve` and `sundialr`.
 
 ### deSolve
@@ -59,7 +59,7 @@ devtools::install_github("sgsokol/r2sundials")
 ```
 
 ### Version note
-`r2sundials` was developed and tested with CVODES version 5.0.0 released in October 2019. It can happen that `r2sundials` works with other versions of CVODES but it was not tested. The versioning scheme of `r2sundials` is based on the version of CVODES used during developments extended with one number proper to `r2sundials`. For example, `r2sundials` can have a version 5.0.0-2.
+`r2sundials` was developed and tested with CVODES version 5.0.0 released in October 2019. The versioning scheme of `r2sundials` is based on the underlying version of CVODES extended with one number proper to `r2sundials`. For example, `r2sundials` can have a version 5.0.0-2.
 
 ## Example
 Let solve a very simple ODE $y'(t)=-ν(y(t)-a)$, with $ν=2$, $a=1$ and $y(0)=0$ on a time interval $[0, 3]$. This equation describes an exponential transition between two states 0 and $a$ with a rate $ν$.
@@ -81,21 +81,19 @@ print(attr(res, "stats"))
 The same problem solved with RcppArmadillo rhs can look like:
 ```{r}
 library(RcppXPtrUtils)
-Sys.setenv(PKG_CXXFLAGS=paste0("-I ", gsub("\\", "/", readLines(system.file("cvodes.txt", package="r2sundials"))[1L], fixed=TRUE)))
-ti=seq(0, 3, length.out=101)
-p=c(nu=2, a=1)
-y0=0
-# next step can take few seconds at the first execution as it will compile C++ code.
 ptr_exp=cppXPtr(code='
 int rhs_exp(double t, const vec &y, vec &ydot, RObject &param, NumericVector &psens) {
   NumericVector p(param);
-  ydot[0] = -p["nu"]*(y[0]-p["a"]);
+  ydot[0] = -p["a"]*(y[0]-1);
   return(CV_SUCCESS);
 }
 ', depends=c("RcppArmadillo","r2sundials","rmumps"),
- includes="using namespace arma;\n#include <r2sundials.h>", cacheDir="lib", verbose=FALSE)
-
-res2=r2sundials::r2cvodes(y0, ti, ptr_exp, param=p)
+ includes=c("// [[Rcpp::plugins(cpp14)]]", "using namespace arma;", "#include <r2sundials.h>"), 
+ cacheDir="lib", verbose=FALSE)
+# For ease of use in C++, we convert param to a numeric vector instead of a list.
+pv=c(a=p$a)
+# new call to r2cvodes() with XPtr pointer ptr_exp.
+res2=r2sundials::r2cvodes(y0, ti, ptr_exp, param=pv)
 stopifnot(diff(range(res2 - res)) < 1.e-14)
 ```
 

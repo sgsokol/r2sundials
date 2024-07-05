@@ -1,4 +1,5 @@
-Readme.Rmd
-Readme.md
+.gitignore
+.git/.*
+^Readme.*
+rm/.*
 gdb.txt
-^rm$

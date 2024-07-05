@@ -3,7 +3,7 @@
  *                Radu Serban @ LLNL
  *-----------------------------------------------------------------
  * SUNDIALS Copyright Start
- * Copyright (c) 2002-2019, Lawrence Livermore National Security
+ * Copyright (c) 2002-2022, Lawrence Livermore National Security
  * and Southern Methodist University.
  * All rights reserved.
  *
@@ -37,7 +37,7 @@ extern "C" {
               the nonlinear iteration is multiplied to get a
               tolerance on the linear iteration
   -----------------------------------------------------------------*/
-#define CVLS_MSBJ   50
+#define CVLS_MSBJ   51
 #define CVLS_DGMAX  RCONST(0.2)
 #define CVLS_EPLIN  RCONST(0.05)
 
@@ -53,15 +53,24 @@ extern "C" {
   -----------------------------------------------------------------*/
 typedef struct CVLsMemRec {
 
+  /* Linear solver type information */
+  booleantype iterative;    /* is the solver iterative?    */
+  booleantype matrixbased;  /* is a matrix structure used? */
+
   /* Jacobian construction & storage */
-  booleantype jacDQ;  /* SUNTRUE if using internal DQ Jac approx.     */
-  CVLsJacFn jac;      /* Jacobian routine to be called                */
-  void *J_data;       /* user data is passed to jac                   */
-  booleantype jbad;   /* heuristic suggestion for pset                */
+  booleantype jacDQ;   /* SUNTRUE if using internal DQ Jac approx.     */
+  CVLsJacFn jac;       /* Jacobian routine to be called                */
+  void *J_data;        /* user data is passed to jac                   */
+  booleantype jbad;    /* heuristic suggestion for pset                */
+  realtype dgmax_jbad; /* if convfail = FAIL_BAD_J and the gamma ratio *
+                        * |gamma/gammap-1| < dgmax_jbad then J is bad  */
+
+  /* Matrix-based solver, scale solution to account for change in gamma */
+  booleantype scalesol;
 
   /* Iterative solver tolerance */
-  realtype sqrtN;     /* sqrt(N)                                      */
-  realtype eplifac;   /* eplifac = user specified or EPLIN_DEFAULT    */
+  realtype eplifac;   /* nonlinear -> linear tol scaling factor       */
+  realtype nrmfac;    /* integrator -> LS norm conversion factor      */
 
   /* Linear solver, matrix and vector objects/pointers */
   SUNLinearSolver LS; /* generic linear solver object                 */
@@ -84,6 +93,7 @@ typedef struct CVLsMemRec {
   long int ncfl;      /* ncfl = total number of convergence failures  */
   long int njtsetup;  /* njtsetup = total number of calls to jtsetup  */
   long int njtimes;   /* njtimes = total number of calls to jtimes    */
+  sunrealtype tnlj;   /* tnlj = t_n at last jac/pset call             */
 
   /* Preconditioner computation
    * (a) user-provided:
@@ -107,6 +117,7 @@ typedef struct CVLsMemRec {
   booleantype jtimesDQ;
   CVLsJacTimesSetupFn jtsetup;
   CVLsJacTimesVecFn jtimes;
+  CVRhsFn jt_f;
   void *jt_data;
 
   /* Linear system setup function

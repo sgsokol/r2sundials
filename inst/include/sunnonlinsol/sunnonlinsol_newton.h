@@ -2,7 +2,7 @@
  * Programmer(s): David J. Gardner @ LLNL
  * -----------------------------------------------------------------------------
  * SUNDIALS Copyright Start
- * Copyright (c) 2002-2019, Lawrence Livermore National Security
+ * Copyright (c) 2002-2022, Lawrence Livermore National Security
  * and Southern Methodist University.
  * All rights reserved.
  *
@@ -50,6 +50,11 @@ struct _SUNNonlinearSolverContent_Newton {
   long int    niters;     /* total number of nonlinear iterations across all solves */
   long int    nconvfails; /* total number of convergence failures across all solves */
   void*       ctest_data; /* data to pass to convergence test function              */
+
+  /* if 0 (default) nothing is printed, if 1 the residual is printed every iteration */
+  int print_level;
+  /* if NULL nothing is printed, if 1 the residual is printed every iteration */
+  FILE* info_file;
 };
 
 typedef struct _SUNNonlinearSolverContent_Newton *SUNNonlinearSolverContent_Newton;
@@ -59,8 +64,12 @@ typedef struct _SUNNonlinearSolverContent_Newton *SUNNonlinearSolverContent_Newt
  * ---------------------------------------------------------------------------*/
 
 /* Constructor to create solver and allocates memory */
-SUNDIALS_EXPORT SUNNonlinearSolver SUNNonlinSol_Newton(N_Vector y);
-SUNDIALS_EXPORT SUNNonlinearSolver SUNNonlinSol_NewtonSens(int count, N_Vector y);
+SUNDIALS_EXPORT
+SUNNonlinearSolver SUNNonlinSol_Newton(N_Vector y, SUNContext sunctx);
+
+SUNDIALS_EXPORT
+SUNNonlinearSolver SUNNonlinSol_NewtonSens(int count, N_Vector y,
+                                           SUNContext sunctx);
 
 /* core functions */
 SUNDIALS_EXPORT SUNNonlinearSolver_Type SUNNonlinSolGetType_Newton(SUNNonlinearSolver NLS);
@@ -103,6 +112,15 @@ SUNDIALS_EXPORT int SUNNonlinSolGetNumConvFails_Newton(SUNNonlinearSolver NLS,
 
 SUNDIALS_EXPORT int SUNNonlinSolGetSysFn_Newton(SUNNonlinearSolver NLS,
                                                 SUNNonlinSolSysFn *SysFn);
+
+SUNDIALS_DEPRECATED_EXPORT_MSG("Use SUNLogger_SetInfoFilename instead")
+int SUNNonlinSolSetInfoFile_Newton(SUNNonlinearSolver NLS,
+                                   FILE* info_file);
+
+SUNDIALS_DEPRECATED_EXPORT_MSG("Use SUNLogger interface instead")
+SUNDIALS_EXPORT int SUNNonlinSolSetPrintLevel_Newton(SUNNonlinearSolver NLS,
+                                                     int print_level);
+
 
 #ifdef __cplusplus
 }

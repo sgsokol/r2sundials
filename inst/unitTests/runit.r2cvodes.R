@@ -1,3 +1,4 @@
+VERBOSE=TRUE
 yini <- c(y1=1, y2=0, y3=0)
 neq <- length(yini)
 # parameters
@@ -14,7 +15,7 @@ r_rober <- function(t, y, parms, psens) vRober(y, parms)
 times <- 10^(seq(from = -5, to = 11, by = 0.1))
 
 # pointer to rhs function
-includes <- "using namespace arma;\n#include <r2sundials.h>"
+includes <- "// [[Rcpp::plugins(cpp14)]]\nusing namespace arma;\n#include <r2sundials.h>"
 pfnd <- cppXPtr(code='
 int d_robertson(double t, const vec &y, vec &ydot, RObject &param, NumericVector &psens) {
   NumericVector p(param);
@@ -23,7 +24,7 @@ int d_robertson(double t, const vec &y, vec &ydot, RObject &param, NumericVector
   ydot[1] = -ydot[0] - ydot[2];
   return(CV_SUCCESS);
 }
-', depends=c("RcppArmadillo","r2sundials","rmumps"), includes=includes, cacheDir="lib", verbose=FALSE)
+', depends=c("RcppArmadillo","r2sundials","rmumps"), includes=includes, cacheDir="lib", verbose=VERBOSE)
 # pointer to dense jacobian function
 pfnj <- cppXPtr(code='
 int jac_robertson(double t, const vec &y, const vec &ydot, mat &J, RObject &param, NumericVector &psens, vec &tmp1, vec &tmp2, vec &tmp3) {
@@ -41,7 +42,7 @@ int jac_robertson(double t, const vec &y, const vec &ydot, mat &J, RObject &para
   J(2, 2) = 0.;
   return(CV_SUCCESS);
 }
-', depends=c("RcppArmadillo","r2sundials","rmumps"), includes=includes, cacheDir="lib", verbose=FALSE)
+', depends=c("RcppArmadillo","r2sundials","rmumps"), includes=includes, cacheDir="lib", verbose=VERBOSE)
 # pointer to sparse jacobian function
 # illustrates usage of named components of param vector
 pfnspj <- cppXPtr(code='
@@ -75,7 +76,7 @@ int spjac_robertson(double t, const vec &y, const vec &ydot, uvec &ir, uvec &pj,
   pj[3] = i;
   return(CV_SUCCESS);
 }
-', depends=c("RcppArmadillo","r2sundials","rmumps"), includes=includes, cacheDir="lib", verbose=FALSE)
+', depends=c("RcppArmadillo","r2sundials","rmumps"), includes=includes, cacheDir="lib", verbose=VERBOSE)
 # pointer to sensitivity1 rhs function
 pfnsens1 <- cppXPtr(code='
 int sens_robertson1(int Ns, double t, const vec &y, const vec &ydot, int iS, const vec &yS, vec &ySdot, RObject &param, NumericVector &p, vec &tmp1, vec &tmp2) {
@@ -102,8 +103,8 @@ int sens_robertson1(int Ns, double t, const vec &y, const vec &ydot, int iS, con
   }
   return(CV_SUCCESS);
 }
-', depends=c("RcppArmadillo","r2sundials","rmumps"), includes=includes, cacheDir="lib", verbose=FALSE)
-
+', depends=c("RcppArmadillo","r2sundials","rmumps"), includes=includes, cacheDir="lib", verbose=VERBOSE)
+#browser()
 # just rhs
 outr <- r2sundials::r2cvodes(yini, times, r_rober, param=parms, maxsteps=2000)
 out0 <- r2sundials::r2cvodes(yini, times, pfnd, param=parms, maxsteps=2000)
@@ -113,6 +114,8 @@ test.r_vs_cpp <- function() {
 }
 # sparse Jacobian
 out1 <- r2sundials::r2cvodes(yini, times, pfnd, param=parms, fjac=pfnspj, nz=8, maxsteps=2000)
+#browser()
+
 test.sparse <- function() {
   checkEqualsNumeric(out0, out1, tolerance=1.e-6, msg="equivalence of solution with sparse Jacobian and internal cvodes Jacobian")
 }
@@ -143,14 +146,14 @@ int d_ball(double t, const vec &y, vec &ydot, RObject &param, NumericVector &pse
   ydot[3] = y[1] > 0 ? -p["g"] : -y[3]; // falling till y=0 then damping
   return(CV_SUCCESS);
 }
-', depends=c("RcppArmadillo","r2sundials","rmumps"), includes=includes, cacheDir="lib", verbose=FALSE)
+', depends=c("RcppArmadillo","r2sundials","rmumps"), includes=includes, cacheDir="lib", verbose=VERBOSE)
 # pointer to root function
 proot <- cppXPtr(code='
 int root_ball(double t, const vec &y, vec &vroot, RObject &param, NumericVector &psens) {
   vroot[0] = y[1]; // y==0
   return(CV_SUCCESS);
 }
-', depends=c("RcppArmadillo","r2sundials","rmumps"), includes=includes, cacheDir="lib", verbose=FALSE)
+', depends=c("RcppArmadillo","r2sundials","rmumps"), includes=includes, cacheDir="lib", verbose=VERBOSE)
 # pointer to event handler function
 pevt <- cppXPtr(code='
 int event_ball(double t, const vec &y, vec &ynew, int Ns, std::vector<vec> &ySv, const ivec &rootsfound, RObject &param, NumericVector &psens) {
@@ -170,7 +173,7 @@ int event_ball(double t, const vec &y, vec &ynew, int Ns, std::vector<vec> &ySv,
     return(R2SUNDIALS_EVENT_STOP);
   }
 }
-', depends=c("RcppArmadillo", "r2sundials", "rmumps"), includes=includes, cacheDir="lib", verbose=FALSE)
+', depends=c("RcppArmadillo", "r2sundials", "rmumps"), includes=includes, cacheDir="lib", verbose=VERBOSE)
 outb <- r2sundials::r2cvodes(yinib, timesb, pball, paramb, nroot=1, froot=proot, fevent=pevt)
 test.root.cpp <- function() {
   checkEqualsNumeric(dim(attr(outb, "roots")), c(2, 5), msg="root finding")
@@ -221,7 +224,7 @@ int d_exp(double t, const vec &y, vec &ydot, RObject &param, NumericVector &psen
   ydot[0] = -psens["nu"]*(y[0]-psens["lim"]);
   return(CV_SUCCESS);
 }
-', depends=c("RcppArmadillo","r2sundials","rmumps"), includes=includes, cacheDir="lib", verbose=FALSE)
+', depends=c("RcppArmadillo","r2sundials","rmumps"), includes=includes, cacheDir="lib", verbose=VERBOSE)
 par_exp <- c("nu"=1, "lim"=1)
 ti <- seq(0, 5, length.out=11)
 oute <- r2sundials::r2cvodes(0., ti, pexp, Ns=2, psens=par_exp)
