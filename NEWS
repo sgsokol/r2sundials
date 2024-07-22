@@ -1,3 +1,10 @@
+Version 6.5.0-5
+===============
+
+* 2023-12-08
+ - fixed gcc-14 issue signaled by CRAN team
+ - fixed Robertson test failure on some platforms
+
 Version 6.5.0-4
 ===============
 

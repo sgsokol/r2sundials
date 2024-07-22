@@ -106,7 +106,7 @@ int sens_robertson1(int Ns, double t, const vec &y, const vec &ydot, int iS, con
 ', depends=c("RcppArmadillo","r2sundials","rmumps"), includes=includes, cacheDir="lib", verbose=VERBOSE)
 #browser()
 # just rhs
-outr <- r2sundials::r2cvodes(yini, times, r_rober, param=parms, maxsteps=2000)
+outr <- r2sundials::r2cvodes(yini, times, r_rober, param=parms, maxsteps=2000, reltol=1.e-9)
 out0 <- r2sundials::r2cvodes(yini, times, pfnd, param=parms, maxsteps=2000)
 
 test.r_vs_cpp <- function() {

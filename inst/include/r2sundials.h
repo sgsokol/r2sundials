@@ -53,7 +53,7 @@ private:
 // helper class for memory freeing
 // serial destructor
 template<typename T>
-Sunmem<T>::~Sunmem<T>() {
+Sunmem<T>::~Sunmem() {
   freeall();
 }
 template<typename T>
