@@ -6,7 +6,7 @@
 #include <sunmatrix/sunmatrix_dense.h> // access to dense SUNMatrix
 #include <sunlinsol/sunlinsol_dense.h> // access to dense SUNLinearSolver
 #include <sunmatrix/sunmatrix_sparse.h> // access to sparse SUNMatrix
-#include <sundials/sundials_types.h> // defs. of realtype, sunindextype
+#include <sundials/sundials_types.h> // defs. of sunrealtype, sunindextype
 
 #define R2SUNDIALS_EVENT_IGNORE 0
 #define R2SUNDIALS_EVENT_HOLD 1
@@ -109,19 +109,18 @@ typedef int (*rsunEventFn)(double t, const vec &y, vec &ynew, int Ns, std::vecto
 typedef int (*rsunSensFn)(int Ns, double t, const vec &yv, const vec &ydotv, const std::vector<vec> &ySv, std::vector<vec> &ySdotv, RObject &param, NumericVector &psens, const vec &tmp1v, const vec &tmp2v);
 typedef int (*rsunSens1Fn)(int Ns, double t, const vec &yv, const vec &ydotv, int iS, const vec &ySv, vec &ySdotv, RObject &param, NumericVector &psens, vec &tmp1v, vec &tmp2v);
 
-int rhswrap(realtype t, N_Vector y, N_Vector ydot, void *user_data);
-int jacwrap(realtype t, N_Vector y, N_Vector fy, SUNMatrix J, void *user_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3);
-int spjacwrap(realtype t, N_Vector y, N_Vector fy, SUNMatrix J, void *user_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3);
-int rootwrap(realtype t, N_Vector y, realtype *rootout, void *user_data);
-int sensrhswrap(int Ns, realtype t, N_Vector y, N_Vector ydot, N_Vector *yS, N_Vector *ySdot, void *user_data, N_Vector tmp1, N_Vector tmp2);
-int sensrhs1wrap(int Ns, realtype t, N_Vector y, N_Vector ydot, int iS, N_Vector yS, N_Vector ySdot, void *user_data, N_Vector tmp1, N_Vector tmp2);
+int rhswrap(sunrealtype t, N_Vector y, N_Vector ydot, void *user_data);
+int jacwrap(sunrealtype t, N_Vector y, N_Vector fy, SUNMatrix J, void *user_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3);
+int spjacwrap(sunrealtype t, N_Vector y, N_Vector fy, SUNMatrix J, void *user_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3);
+int rootwrap(sunrealtype t, N_Vector y, sunrealtype *rootout, void *user_data);
+int sensrhswrap(int Ns, sunrealtype t, N_Vector y, N_Vector ydot, N_Vector *yS, N_Vector *ySdot, void *user_data, N_Vector tmp1, N_Vector tmp2);
+int sensrhs1wrap(int Ns, sunrealtype t, N_Vector y, N_Vector ydot, int iS, N_Vector yS, N_Vector ySdot, void *user_data, N_Vector tmp1, N_Vector tmp2);
 
 // error handler
-void rsunerr(int error_code, const char *module, const char *function, char *msg, void *eh_data);
-
+void rsunerr(int line, const char *func, const char *file, const char *msg, SUNErrCode err_code, void *err_user_data, SUNContext sunctx);
 // [[Rcpp::plugins(cpp11)]]
 template <typename... Args>
 inline void warningNoCall(const char* fmt, Args&&... args ) {
-    Rf_warningcall(R_NilValue, tfm::format(fmt, std::forward<Args>(args)... ).c_str());
+    Rf_warningcall(R_NilValue, "%s", tfm::format(fmt, std::forward<Args>(args)... ).c_str());
 }
 #endif

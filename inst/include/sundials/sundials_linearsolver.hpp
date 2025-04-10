@@ -2,7 +2,7 @@
  * Programmer(s): Cody J. Balos @ LLNL
  * -----------------------------------------------------------------------------
  * SUNDIALS Copyright Start
- * Copyright (c) 2002-2022, Lawrence Livermore National Security
+ * Copyright (c) 2002-2024, Lawrence Livermore National Security
  * and Southern Methodist University.
  * All rights reserved.
  *
@@ -23,7 +23,8 @@
 
 namespace sundials {
 namespace impl {
-using BaseLinearSolver = BaseObject<_generic_SUNLinearSolver, _generic_SUNLinearSolver_Ops>;
+using BaseLinearSolver =
+  BaseObject<_generic_SUNLinearSolver, _generic_SUNLinearSolver_Ops>;
 } // namespace impl
 
 namespace experimental {
@@ -31,9 +32,10 @@ struct SUNLinearSolverDeleter
 {
   void operator()(SUNLinearSolver LS)
   {
-    if (LS) SUNLinSolFree(LS);
+    if (LS) { SUNLinSolFree(LS); }
   }
 };
+
 using SUNLinearSolverView = ClassView<SUNLinearSolver, SUNLinearSolverDeleter>;
 } // namespace experimental
 } // namespace sundials

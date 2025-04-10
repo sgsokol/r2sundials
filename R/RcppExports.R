@@ -52,7 +52,10 @@
 #' \item{sens}{sensitivity 3D array with dimensions \code{Neq} x \code{Nt} x \code{Ns}}
 #' }
 #'
-#' @details The package \pkg{r2sundials} was designed to avoid as much as possible memory reallocation in callback functions (\code{frhs} and others). C++ variants of these functions are fully compliant with this design principle. While R counterparts are not (as per R design). Here, we define callback function interfaces that user has to abide to. Pointers to C++ variants to be passed to \code{r2cvodes()} can be obtained with the help of \pkg{RcppXPtrUtils}. See examples for illustrations of such use.
+#' @details The package \pkg{r2sundials} was designed to avoid as much as possible memory reallocation in callback functions (\code{frhs} and others). C++ variants of these functions are fully compliant with this design principle. While R counterparts are not (as per R design).\cr
+#' However, there is a package \code{ast2ast} providing a function  \code{\link[ast2ast]{translate}} which can automatically
+#' convert some subset of R to C++ code. The result can be a pointer to a compiled C++ function which can be directly used in \code{r2cvodes()}. A tutorial is avalable at https://konrad1991.github.io/ast2ast-examples/ .\cr
+#' In this package, we define callback function interfaces that user has to abide to. Pointers to C++ variants to be passed to \code{r2cvodes()} can be obtained with the help of \pkg{RcppXPtrUtils}. See examples for illustrations of such use.
 #' \cr Right hand side function \code{frhs} provided by user calculates derivative vector \eqn{y'}. This function can be defined as classical R function or a Rcpp/RcppArmadillo function. In the first case, it must have the following list of input arguments\cr
 #' \code{frhs(t, y, param, psens)}\cr
 #' and return a derivative vector of length \code{Neq}. Here \code{t} is time point (numeric scalar), \code{y} current state vector (numeric vector of length \code{Neq}), \code{param} and \code{psens} are passed through from \code{r2cvodes()} arguments.
@@ -98,6 +101,8 @@
 #' If written in C++, this functions has to be defined as\cr
 #' \code{int (*fsens1)(int Ns, double t, const vec &yv, const vec &ydotv, int iS, const vec &ySv, vec &ySdotv, RObject &param, NumericVector &psens, const vec &tmp1v, const vec &tmp2v)}\cr
 #' The result, i.e. \eqn{s'[iS]} is to be stored in-place in \code{ySdotv} vector. This function returns a status flag.
+#' 
+#' @seealso \code{\link[ast2ast]{translate}}
 #' @examples
 #' # Ex.1. Solve a scalar ODE describing exponential transition form 0 to 1
 #' # y'=-a*(y-1), y(0)=0, a is a parameter that we arbitrary choose to be 2.
@@ -318,6 +323,7 @@
 #'       plot(ti, attr(res_rob, "sens")[i,,j], log="x", t="l", xlab="Time",
 #'            ylab=parse(text=paste0("partialdiff*y[", i, "]/partialdiff*k[", j, "]")))
 #' }
+#'
 #' @export
 r2cvodes <- function(yv, times, frhs, param = NULL, tstop = as.numeric( c()), abstol = 1.e-8, reltol = 1.e-8, integrator = as.integer( c()), maxord = 0L, maxsteps = 0L, hin = 0., hmax = 0., hmin = 0., constraints = as.numeric( c()), fjac = NULL, nz = 0L, rmumps_perm = as.integer( c()), nroot = 0L, froot = NULL, fevent = NULL, Ns = 0L, psens = as.numeric( c()), sens_init = as.numeric( c()), psens_bar = as.numeric( c()), psens_list = as.integer( c()), fsens = NULL, fsens1 = NULL, sens_method = as.integer( c()), errconS = TRUE) {
     .Call('_r2sundials_r2cvodes', PACKAGE = 'r2sundials', yv, times, frhs, param, tstop, abstol, reltol, integrator, maxord, maxsteps, hin, hmax, hmin, constraints, fjac, nz, rmumps_perm, nroot, froot, fevent, Ns, psens, sens_init, psens_bar, psens_list, fsens, fsens1, sens_method, errconS)

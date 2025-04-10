@@ -3,3 +3,5 @@
 ^Readme.*
 rm/.*
 gdb.txt
+.*\.old
+^include

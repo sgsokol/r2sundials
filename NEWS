@@ -1,3 +1,10 @@
+Version 7.2.1-2
+===============
+
+* 2025-04-09
+ - upgrade sundials/cvodes to 7.2.1
+ - fixed the presence of vprintf, vsprintf, stderr, stdout and abort signaled by CRAN team
+
 Version 6.5.0-5
 ===============
 

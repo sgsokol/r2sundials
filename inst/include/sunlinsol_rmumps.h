@@ -8,12 +8,14 @@
 using namespace Rcpp;
 using namespace arma;
 
-#include <sundials/sundials_context_impl.h>
+//#include <sundials/sundials_context_impl.h>
+#include <sundials/sundials_types.h>
 #include <sundials/sundials_linearsolver.h>
 #include <sundials/sundials_matrix.h>
 #include <sundials/sundials_nvector.h>
 #include <nvector/nvector_serial.h> // access to serial N_Vector
 #include <sunmatrix/sunmatrix_sparse.h>
+#include <sundials/sundials_math.h>
 #include <rmumps.h>
 
 #ifdef __cplusplus  /* wrapper to enable C++ usage */
@@ -63,7 +65,7 @@ SUNDIALS_EXPORT int SUNLinSol_RMUMPSSetOrdering(SUNLinearSolver S, std::string o
 SUNDIALS_EXPORT SUNLinearSolver_Type SUNLinSolGetType_RMUMPS(SUNLinearSolver S);
 SUNDIALS_EXPORT int SUNLinSolInitialize_RMUMPS(SUNLinearSolver S);
 SUNDIALS_EXPORT int SUNLinSolSetup_RMUMPS(SUNLinearSolver S, SUNMatrix A);
-SUNDIALS_EXPORT int SUNLinSolSolve_RMUMPS(SUNLinearSolver S, SUNMatrix A, N_Vector x, N_Vector b, realtype tol);
+SUNDIALS_EXPORT int SUNLinSolSolve_RMUMPS(SUNLinearSolver S, SUNMatrix A, N_Vector x, N_Vector b, sunrealtype tol);
 SUNDIALS_EXPORT long int SUNLinSolLastFlag_RMUMPS(SUNLinearSolver S);
 SUNDIALS_EXPORT int SUNLinSolFree_RMUMPS(SUNLinearSolver S);
 #ifdef __cplusplus

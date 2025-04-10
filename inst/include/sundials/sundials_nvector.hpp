@@ -2,7 +2,7 @@
  * Programmer(s): Cody J. Balos @ LLNL
  * -----------------------------------------------------------------------------
  * SUNDIALS Copyright Start
- * Copyright (c) 2002-2022, Lawrence Livermore National Security
+ * Copyright (c) 2002-2024, Lawrence Livermore National Security
  * and Southern Methodist University.
  * All rights reserved.
  *
@@ -31,9 +31,10 @@ struct NVectorDeleter
 {
   void operator()(N_Vector v)
   {
-    if (v) N_VDestroy(v);
+    if (v) { N_VDestroy(v); }
   }
 };
+
 using NVectorView = ClassView<N_Vector, NVectorDeleter>;
 } // namespace experimental
 } // namespace sundials

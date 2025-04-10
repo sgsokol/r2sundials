@@ -2,7 +2,7 @@
  * Programmer(s): David J. Gardner @ LLNL
  * -----------------------------------------------------------------
  * SUNDIALS Copyright Start
- * Copyright (c) 2002-2022, Lawrence Livermore National Security
+ * Copyright (c) 2002-2024, Lawrence Livermore National Security
  * and Southern Methodist University.
  * All rights reserved.
  *
@@ -20,12 +20,10 @@
 
 #include <cstdio>
 #include <stdexcept>
-#include <CL/sycl.hpp>
+#include <sycl/sycl.hpp>
 
-namespace sundials
-{
-namespace sycl
-{
+namespace sundials {
+namespace sycl {
 
 class ExecPolicy
 {
@@ -33,9 +31,9 @@ public:
   virtual size_t gridSize(size_t numWorkUnits = 0, size_t blockDim = 0) const = 0;
   virtual size_t blockSize(size_t numWorkUnits = 0, size_t gridDim = 0) const = 0;
   virtual ExecPolicy* clone() const = 0;
+
   virtual ~ExecPolicy() {}
 };
-
 
 /*
  * A kernel execution policy that maps each thread to a work unit.
@@ -46,21 +44,20 @@ public:
 class ThreadDirectExecPolicy : public ExecPolicy
 {
 public:
-  ThreadDirectExecPolicy(const size_t blockDim)
-    : blockDim_(blockDim)
-  {}
+  ThreadDirectExecPolicy(const size_t blockDim) : blockDim_(blockDim) {}
 
   ThreadDirectExecPolicy(const ThreadDirectExecPolicy& ex)
     : blockDim_(ex.blockDim_)
   {}
 
-  virtual size_t gridSize(size_t numWorkUnits = 0, size_t blockDim = 0) const
+  virtual size_t gridSize(size_t numWorkUnits = 0, size_t /* blockDim */ = 0) const
   {
     /* ceil(n/m) = floor((n + m - 1) / m) */
     return (numWorkUnits + blockSize() - 1) / blockSize();
   }
 
-  virtual size_t blockSize(size_t numWorkUnits = 0, size_t gridDim = 0) const
+  virtual size_t blockSize(size_t /* numWorkUnits */ = 0,
+                           size_t /* gridDim */      = 0) const
   {
     return blockDim_;
   }
@@ -90,12 +87,14 @@ public:
     : blockDim_(ex.blockDim_), gridDim_(ex.gridDim_)
   {}
 
-  virtual size_t gridSize(size_t numWorkUnits = 0, size_t blockDim = 0) const
+  virtual size_t gridSize(size_t /* numWorkUnits */ = 0,
+                          size_t /* blockDim */     = 0) const
   {
     return gridDim_;
   }
 
-  virtual size_t blockSize(size_t numWorkUnits = 0, size_t gridDim = 0) const
+  virtual size_t blockSize(size_t /* numWorkUnits */ = 0,
+                           size_t /* gridDim */      = 0) const
   {
     return blockDim_;
   }
@@ -111,7 +110,7 @@ private:
 };
 
 /*
- * A kernel execution policy for performing a reduction across indvidual thread
+ * A kernel execution policy for performing a reduction across individual thread
  * blocks. The number of threads per block (blockSize) can be set to anything.
  * The number of blocks (gridSize) can be set to any value greater than or equal
  * to 0. If it is set to 0, then the grid size will be chosen so that there are
@@ -128,7 +127,7 @@ public:
     : blockDim_(ex.blockDim_), gridDim_(ex.gridDim_)
   {}
 
-  virtual size_t gridSize(size_t numWorkUnits = 0, size_t blockDim = 0) const
+  virtual size_t gridSize(size_t numWorkUnits = 0, size_t /* blockDim */ = 0) const
   {
     if (gridDim_ == 0)
     {
@@ -137,7 +136,8 @@ public:
     return gridDim_;
   }
 
-  virtual size_t blockSize(size_t numWorkUnits = 0, size_t gridDim = 0) const
+  virtual size_t blockSize(size_t /* numWorkUnits */ = 0,
+                           size_t /* gridDim */      = 0) const
   {
     return blockDim_;
   }

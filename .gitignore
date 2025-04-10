@@ -1,3 +1,8 @@
 *.toremove
 rm/*
-lib-5.*
+*.old
+*.o
+*.a
+*.so
+*.E
+*.S

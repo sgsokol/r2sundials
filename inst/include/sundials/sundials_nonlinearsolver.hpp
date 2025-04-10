@@ -2,7 +2,7 @@
  * Programmer(s): Cody J. Balos @ LLNL
  * -----------------------------------------------------------------------------
  * SUNDIALS Copyright Start
- * Copyright (c) 2002-2022, Lawrence Livermore National Security
+ * Copyright (c) 2002-2024, Lawrence Livermore National Security
  * and Southern Methodist University.
  * All rights reserved.
  *
@@ -23,7 +23,8 @@
 
 namespace sundials {
 namespace impl {
-using BaseNonlinearSolver = BaseObject<_generic_SUNNonlinearSolver, _generic_SUNNonlinearSolver_Ops>;
+using BaseNonlinearSolver =
+  BaseObject<_generic_SUNNonlinearSolver, _generic_SUNNonlinearSolver_Ops>;
 } // namespace impl
 
 namespace experimental {
@@ -31,10 +32,12 @@ struct SUNNonlinearSolverDeleter
 {
   void operator()(SUNNonlinearSolver NLS)
   {
-    if (NLS) SUNNonlinSolFree(NLS);
+    if (NLS) { SUNNonlinSolFree(NLS); }
   }
 };
-using SUNNonlinearSolverView = ClassView<SUNNonlinearSolver, SUNNonlinearSolverDeleter>;
+
+using SUNNonlinearSolverView =
+  ClassView<SUNNonlinearSolver, SUNNonlinearSolverDeleter>;
 } // namespace experimental
 } // namespace sundials
 

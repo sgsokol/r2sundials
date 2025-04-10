@@ -1,6 +1,3 @@
-#include <sundials/sundials_math.h>
-#include <sundials/sundials_context_impl.h>
-#include <sundials/sundials_logger_impl.h>
 #include <sunlinsol_rmumps.h>
 // exported functions
 
@@ -111,7 +108,7 @@ SUNDIALS_EXPORT SUNLinearSolver_Type SUNLinSolGetType_RMUMPS(SUNLinearSolver S)
 SUNDIALS_EXPORT int SUNLinSolInitialize_RMUMPS(SUNLinearSolver S)
 {
 //Rcout << "call SUNLinSolInitialize_RMUMPS\n";
-  LASTFLAG(S) = SUNLS_SUCCESS;
+  LASTFLAG(S) = SUN_SUCCESS;
   return(LASTFLAG(S));
 }
 
@@ -121,7 +118,7 @@ SUNDIALS_EXPORT int SUNLinSolSetup_RMUMPS(SUNLinearSolver S, SUNMatrix A) {
   int n=SM_COLUMNS_S(A); //nzres=SM_NNZ_S(A); // nz reserved, it may be larger than real nz
   // Ensure that A is a sparse matrix
   if (SUNMatGetID(A) != SUNMATRIX_SPARSE) {
-    LASTFLAG(S) = SUNLS_ILL_INPUT;
+    LASTFLAG(S) = SUN_ERR_ARG_INCOMPATIBLE;
     return(LASTFLAG(S));
   }
   // update matrix data
@@ -166,12 +163,12 @@ print(asl["i"]);
 print(asl["j"]);
 print(asl["v"]);
 */
-  LASTFLAG(S) = SUNLS_SUCCESS;
+  LASTFLAG(S) = SUN_SUCCESS;
   return(LASTFLAG(S));
 }
 
 SUNDIALS_EXPORT int SUNLinSolSolve_RMUMPS(SUNLinearSolver S, SUNMatrix A, N_Vector x, 
-                       N_Vector b, realtype tol) {
+                       N_Vector b, sunrealtype tol) {
 //Rcout << "call SUNLinSolSolve_RMUMPS\n";
 //static long clk_tck = CLOCKS_PER_SEC;
 //clock_t t1, t2;
@@ -179,10 +176,10 @@ SUNDIALS_EXPORT int SUNLinSolSolve_RMUMPS(SUNLinearSolver S, SUNMatrix A, N_Vect
   //ncall++;
   int n=NV_LENGTH_S(x);
   sunindextype *ap=SM_INDEXPTRS_S(A);
-  realtype *xdata=N_VGetArrayPointer(x), *bdata=N_VGetArrayPointer(b), *adata=SM_DATA_S(A);
+  sunrealtype *xdata=N_VGetArrayPointer(x), *bdata=N_VGetArrayPointer(b), *adata=SM_DATA_S(A);
   
   if (xdata == NULL) {
-    LASTFLAG(S) = SUNLS_MEM_FAIL;
+    LASTFLAG(S) = SUN_ERR_EXT_FAIL;
     return(LASTFLAG(S));
   }
   // copy b into x
@@ -191,7 +188,7 @@ SUNDIALS_EXPORT int SUNLinSolSolve_RMUMPS(SUNLinearSolver S, SUNMatrix A, N_Vect
   // check for identity matrix in A
   if (ap[n] == n && std::count(adata, adata+n, 1.) == n) {
     // identity matrix => we are done
-    LASTFLAG(S) = SUNLS_SUCCESS;
+    LASTFLAG(S) = SUN_SUCCESS;
     return(LASTFLAG(S));
   }
   
@@ -221,7 +218,7 @@ vec(xdata, NV_LENGTH_S(x), false).print("b");
 //printf("%d t solve (s) : %lf \n", ncall, (double)(t2-t1)/(double)clk_tck);
 //vec(xdata, NV_LENGTH_S(x), false).print("x");
   */
-  LASTFLAG(S) = SUNLS_SUCCESS;
+  LASTFLAG(S) = SUN_SUCCESS;
   return(LASTFLAG(S));
 }
 
@@ -234,7 +231,7 @@ SUNDIALS_EXPORT int SUNLinSolFree_RMUMPS(SUNLinearSolver S) {
 //Rcout << "call SUNLinSolFree_RMUMPS\n";
   // return with success if already freed
   if (S == NULL)
-    return(SUNLS_SUCCESS);
+    return(SUN_SUCCESS);
   
   // delete items from the contents structure (if it exists)
   if (S->content) {
@@ -254,5 +251,5 @@ SUNDIALS_EXPORT int SUNLinSolFree_RMUMPS(SUNLinearSolver S) {
   
   free(S);
   S = NULL;
-  return(SUNLS_SUCCESS);
+  return(SUN_SUCCESS);
 }

@@ -3,6 +3,7 @@ if (requireNamespace("RUnit", quietly=TRUE) && requireNamespace("RcppXPtrUtils",
    library(RcppXPtrUtils)
    library(r2sundials)
    library(RcppArmadillo)
+   library(rmumps)
 
    testSuite <- defineTestSuite(
       name = "r2sundials unit tests",

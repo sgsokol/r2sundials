@@ -50,7 +50,10 @@
 //' \item{sens}{sensitivity 3D array with dimensions \code{Neq} x \code{Nt} x \code{Ns}}
 //' }
 //'
-//' @details The package \pkg{r2sundials} was designed to avoid as much as possible memory reallocation in callback functions (\code{frhs} and others). C++ variants of these functions are fully compliant with this design principle. While R counterparts are not (as per R design). Here, we define callback function interfaces that user has to abide to. Pointers to C++ variants to be passed to \code{r2cvodes()} can be obtained with the help of \pkg{RcppXPtrUtils}. See examples for illustrations of such use.
+//' @details The package \pkg{r2sundials} was designed to avoid as much as possible memory reallocation in callback functions (\code{frhs} and others). C++ variants of these functions are fully compliant with this design principle. While R counterparts are not (as per R design).\cr
+//' However, there is a package \code{ast2ast} providing a function  \code{\link[ast2ast]{translate}} which can automatically
+//' convert some subset of R to C++ code. The result can be a pointer to a compiled C++ function which can be directly used in \code{r2cvodes()}. A tutorial is avalable at https://konrad1991.github.io/ast2ast-examples/ .\cr
+//' In this package, we define callback function interfaces that user has to abide to. Pointers to C++ variants to be passed to \code{r2cvodes()} can be obtained with the help of \pkg{RcppXPtrUtils}. See examples for illustrations of such use.
 //' \cr Right hand side function \code{frhs} provided by user calculates derivative vector \eqn{y'}. This function can be defined as classical R function or a Rcpp/RcppArmadillo function. In the first case, it must have the following list of input arguments\cr
 //' \code{frhs(t, y, param, psens)}\cr
 //' and return a derivative vector of length \code{Neq}. Here \code{t} is time point (numeric scalar), \code{y} current state vector (numeric vector of length \code{Neq}), \code{param} and \code{psens} are passed through from \code{r2cvodes()} arguments.
@@ -96,6 +99,8 @@
 //' If written in C++, this functions has to be defined as\cr
 //' \code{int (*fsens1)(int Ns, double t, const vec &yv, const vec &ydotv, int iS, const vec &ySv, vec &ySdotv, RObject &param, NumericVector &psens, const vec &tmp1v, const vec &tmp2v)}\cr
 //' The result, i.e. \eqn{s'[iS]} is to be stored in-place in \code{ySdotv} vector. This function returns a status flag.
+//' 
+//' @seealso \code{\link[ast2ast]{translate}}
 //' @examples
 //' # Ex.1. Solve a scalar ODE describing exponential transition form 0 to 1
 //' # y'=-a*(y-1), y(0)=0, a is a parameter that we arbitrary choose to be 2.
@@ -316,6 +321,7 @@
 //'       plot(ti, attr(res_rob, "sens")[i,,j], log="x", t="l", xlab="Time",
 //'            ylab=parse(text=paste0("partialdiff*y[", i, "]/partialdiff*k[", j, "]")))
 //' }
+//'
 //' @export
 // [[Rcpp::export]]
 NumericMatrix r2cvodes(const NumericVector &yv, const vec &times, const RObject &frhs, RObject param=R_NilValue, const NumericVector tstop=NumericVector::create(), const double abstol=1.e-8, const double reltol=1.e-8, IntegerVector integrator=IntegerVector::create(), const int maxord=0, const int maxsteps=0, const double hin=0., const double hmax=0., const double hmin=0., const vec &constraints=NumericVector::create(), const RObject fjac=R_NilValue, const int nz=0, IntegerVector rmumps_perm=IntegerVector::create(), const int nroot=0, const RObject froot=R_NilValue, const RObject fevent=R_NilValue,
@@ -326,7 +332,7 @@ const int Ns=0, NumericVector psens=NumericVector::create(), NumericVector sens_
   SUNContext sunctx;
   Sunmem<int> mem;
   UserData udata;
-  realtype t;
+  sunrealtype t;
   N_Vector nv_y, nv_constraints, *yS;
   SUNMatrix A;
   SUNLinearSolver LS;
@@ -367,7 +373,7 @@ const int Ns=0, NumericVector psens=NumericVector::create(), NumericVector sens_
   std::vector<vec> ySv(Ns);
   
   /* Create the SUNDIALS context that all SUNDIALS objects require */
-  check_retval(SUNContext_Create(NULL, &sunctx));
+  check_retval(SUNContext_Create(SUN_COMM_NULL, &sunctx));
   mem.add((void **) &sunctx, (funfree) SUNContext_Free);
   /* Create serial vector of length neq from yv (initial conditions)*/
   getmem(nv_y, N_VNew_Serial(neq, sunctx));
@@ -383,7 +389,7 @@ const int Ns=0, NumericVector psens=NumericVector::create(), NumericVector sens_
   // create the solver memory and specify the Backward Differentiation Formula
   getmem(cvode_mem, CVodeCreate(integrator[0], sunctx));
   mem.add((void **) &cvode_mem, (funfreep) CVodeFree);
-  check_retval(CVodeSetErrHandlerFn(cvode_mem, rsunerr, NULL));
+  check_retval(SUNContext_PushErrHandler(sunctx, rsunerr, NULL));
   // Set cvode_mem and put different solver components
   if (tstop.size() > 0)
     check_retval(CVodeSetStopTime(cvode_mem, tstop[0]));
@@ -411,7 +417,7 @@ const int Ns=0, NumericVector psens=NumericVector::create(), NumericVector sens_
     }
     getmem(nv_constraints, N_VNewEmpty_Serial(neq, sunctx));
     mem.add((void **) &nv_constraints, (funfree) N_VDestroy);
-    NV_DATA_S(nv_constraints) = (realtype *) constraints.begin();
+    NV_DATA_S(nv_constraints) = (sunrealtype *) constraints.begin();
     check_retval(CVodeSetConstraints(cvode_mem, nv_constraints));
   }
 
@@ -693,7 +699,7 @@ const int Ns=0, NumericVector psens=NumericVector::create(), NumericVector sens_
   return(resout);
 }
 
-int rhswrap(realtype t, N_Vector y, N_Vector ydot, void *user_data) {
+int rhswrap(sunrealtype t, N_Vector y, N_Vector ydot, void *user_data) {
   UserData *udata=(UserData *) user_data;
   List lp=udata->lp;
   RObject param=lp["param"];
@@ -713,7 +719,7 @@ int rhswrap(realtype t, N_Vector y, N_Vector ydot, void *user_data) {
     return(user_fn(t, yv, ydotv, param, udata->psens));
   }
 }
-int jacwrap(realtype t, N_Vector y, N_Vector ydot, SUNMatrix J, void *user_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3) {
+int jacwrap(sunrealtype t, N_Vector y, N_Vector ydot, SUNMatrix J, void *user_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3) {
   UserData *udata=(UserData *) user_data;
   List lp=udata->lp;
   RObject param=lp["param"];
@@ -736,7 +742,7 @@ int jacwrap(realtype t, N_Vector y, N_Vector ydot, SUNMatrix J, void *user_data,
     return(user_fn(t, yv, ydotv, ja, param, udata->psens, tmp1v, tmp2v, tmp3v));
   }
 }
-int spjacwrap(realtype t, N_Vector y, N_Vector ydot, SUNMatrix J, void *user_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3) {
+int spjacwrap(sunrealtype t, N_Vector y, N_Vector ydot, SUNMatrix J, void *user_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3) {
   UserData *udata=(UserData *) user_data;
   List lp=udata->lp;
   RObject param=lp["param"];
@@ -782,7 +788,7 @@ int spjacwrap(realtype t, N_Vector y, N_Vector ydot, SUNMatrix J, void *user_dat
     return(res);
   }
 }
-int rootwrap(realtype t, N_Vector y, realtype *rootout, void *user_data) {
+int rootwrap(sunrealtype t, N_Vector y, sunrealtype *rootout, void *user_data) {
   UserData *udata=(UserData *) user_data;
   List lp=udata->lp;
   RObject param=lp["param"];
@@ -802,7 +808,7 @@ int rootwrap(realtype t, N_Vector y, realtype *rootout, void *user_data) {
     return(user_fn(t, yv, vroot, param, udata->psens));
   }
 }
-int sensrhswrap(int Ns, realtype t, N_Vector y, N_Vector ydot, N_Vector *yS, N_Vector *ySdot, void *user_data, N_Vector tmp1, N_Vector tmp2) {
+int sensrhswrap(int Ns, sunrealtype t, N_Vector y, N_Vector ydot, N_Vector *yS, N_Vector *ySdot, void *user_data, N_Vector tmp1, N_Vector tmp2) {
   UserData *udata=(UserData *) user_data;
   List lp=udata->lp;
   RObject param=lp["param"];
@@ -834,7 +840,7 @@ int sensrhswrap(int Ns, realtype t, N_Vector y, N_Vector ydot, N_Vector *yS, N_V
     return(user_fn(Ns, t, yv, ydotv, ySv, ySdotv, param, udata->psens, tmp1v, tmp2v));
   }
 }
-int sensrhs1wrap(int Ns, realtype t, N_Vector y, N_Vector ydot, int iS, N_Vector yS, N_Vector ySdot, void *user_data, N_Vector tmp1, N_Vector tmp2) {
+int sensrhs1wrap(int Ns, sunrealtype t, N_Vector y, N_Vector ydot, int iS, N_Vector yS, N_Vector ySdot, void *user_data, N_Vector tmp1, N_Vector tmp2) {
   UserData *udata=(UserData *) user_data;
   List lp=udata->lp;
   RObject param=lp["param"];
@@ -859,9 +865,8 @@ int sensrhs1wrap(int Ns, realtype t, N_Vector y, N_Vector ydot, int iS, N_Vector
   }
 }
 
-// helpers
-void rsunerr(int error_code, const char *module, const char *function, char *msg, void *eh_data) {
-  throw Rcpp::exception(tfm::format("%s: %s", function, msg).c_str(), false);
+void rsunerr(int line, const char *func, const char *file, const char *msg, SUNErrCode err_code, void *err_user_data, SUNContext sunctx) {
+  throw Rcpp::exception(tfm::format("%s: %s", func, msg).c_str(), false);
   //stop("%s: %s", function, msg);
 }
 

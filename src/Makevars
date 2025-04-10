@@ -1,16 +1,16 @@
 #CXX_STD = CXX14
 #PKG_CFLAGS = -fno-common
-PKG_CPPFLAGS = -I../inst/include -I ../inst/include/sundials -DNO_FPRINTF_OUTPUT -DARMA_IGNORE_DEPRECATED_MARKER # 
+PKG_CPPFLAGS = -I../inst/include -I ../inst/include/sundials -I ./lib/sundials -DNO_FPRINTF_OUTPUT
 
-PKG_LIBS = -L../inst -lsundials $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS)
+PKG_LIBS = -Llib -lsundials $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS)
 
-$(SHLIB): ../inst/libsundials.a
+$(SHLIB): lib/libsundials.a
 
-# find lib -type f -name '*'.c | tr $'\n' ' '
-sunsrc = lib/cvodes/cvodes_proj.c lib/cvodes/cvodea.c lib/cvodes/cvodes_spils.c lib/cvodes/cvodes_io.c lib/cvodes/cvodea_io.c lib/cvodes/cvodes_bandpre.c lib/cvodes/cvodes_nls_sim.c lib/cvodes/cvodes.c lib/cvodes/cvodes_direct.c lib/cvodes/cvodes_bbdpre.c lib/cvodes/cvodes_nls_stg.c lib/cvodes/cvodes_nls_stg1.c lib/cvodes/cvodes_diag.c lib/cvodes/cvodes_ls.c lib/cvodes/cvodes_nls.c  lib/nvector/serial/nvector_serial.c lib/sunnonlinsol/newton/sunnonlinsol_newton.c lib/sunnonlinsol/fixedpoint/sunnonlinsol_fixedpoint.c lib/sunlinsol/sptfqmr/sunlinsol_sptfqmr.c lib/sunlinsol/spgmr/sunlinsol_spgmr.c lib/sunlinsol/pcg/sunlinsol_pcg.c lib/sunlinsol/dense/sunlinsol_dense.c lib/sunlinsol/band/sunlinsol_band.c lib/sunlinsol/spbcgs/sunlinsol_spbcgs.c lib/sunlinsol/spfgmr/sunlinsol_spfgmr.c lib/sunlinsol/lapackdense/sunlinsol_lapackdense.c lib/sunlinsol/lapackband/sunlinsol_lapackband.c  lib/sundials/sundials_futils.c lib/sundials/sundials_context.c lib/sundials/sundials_nonlinearsolver.c lib/sundials/sundials_matrix.c lib/sundials/sundials_nvector_senswrapper.c lib/sundials/sundials_logger.c lib/sundials/sundials_memory.c lib/sundials/sundials_direct.c lib/sundials/sundials_dense.c lib/sundials/sundials_profiler.c lib/sundials/sundials_nvector.c lib/sundials/sundials_band.c lib/sundials/sundials_math.c lib/sundials/sundials_version.c lib/sundials/sundials_linearsolver.c lib/sundials/sundials_iterative.c lib/sunmatrix/dense/sunmatrix_dense.c lib/sunmatrix/band/sunmatrix_band.c lib/sunmatrix/sparse/sunmatrix_sparse.c
+# find lib -type f -name '*'.c ! -name '*'.old | tr $'\n' ' '
+sunsrc = lib/sunmatrix/dense/sunmatrix_dense.c lib/sunmatrix/band/sunmatrix_band.c lib/sunmatrix/sparse/sunmatrix_sparse.c lib/nvector/serial/nvector_serial.c lib/sunnonlinsol/newton/sunnonlinsol_newton.c lib/sunnonlinsol/fixedpoint/sunnonlinsol_fixedpoint.c lib/sunlinsol/spgmr/sunlinsol_spgmr.c lib/sunlinsol/spfgmr/sunlinsol_spfgmr.c lib/sunlinsol/dense/sunlinsol_dense.c lib/sunlinsol/pcg/sunlinsol_pcg.c lib/sunlinsol/band/sunlinsol_band.c lib/sunlinsol/lapackband/sunlinsol_lapackband.c lib/sunlinsol/lapackdense/sunlinsol_lapackdense.c lib/sunlinsol/spbcgs/sunlinsol_spbcgs.c lib/sunlinsol/sptfqmr/sunlinsol_sptfqmr.c lib/cvodes/cvodes_diag.c lib/cvodes/cvodes_proj.c lib/cvodes/cvodes_bandpre.c lib/cvodes/cvodes_nls_stg.c lib/cvodes/cvodes_nls_stg1.c lib/cvodes/cvodes_bbdpre.c lib/cvodes/cvodea_io.c lib/cvodes/cvodes_ls.c lib/cvodes/cvodea.c lib/cvodes/cvodes_io.c lib/cvodes/cvodes_nls.c lib/cvodes/cvodes_nls_sim.c lib/cvodes/cvodes.c lib/sundials/sundials_context.c lib/sundials/sundials_math.c lib/sundials/sundials_iterative.c lib/sundials/sundials_stepper.c lib/sundials/sundials_logger.c lib/sundials/sundials_linearsolver.c lib/sundials/sundials_nvector.c lib/sundials/sundials_adaptcontroller.c lib/sundials/sundials_memory.c lib/sundials/sundials_dense.c lib/sundials/sundials_errors.c lib/sundials/sundials_profiler.c lib/sundials/sundials_futils.c lib/sundials/sundials_version.c lib/sundials/sundials_matrix.c lib/sundials/sundials_band.c lib/sundials/sundials_direct.c lib/sundials/sundials_nvector_senswrapper.c lib/sundials/sundials_nonlinearsolver.c lib/sundials/sundials_hashmap.c
 sunobj = $(sunsrc:.c=.o)
-../inst/libsundials.a: $(sunobj)
-	$(AR) -crvs ../inst/libsundials.a $(sunobj)
+lib/libsundials.a: $(sunobj)
+	$(AR) -crvs lib/libsundials.a $(sunobj)
 	$(RANLIB) $@
 
 #MYCXXFLAGS=-O0 -g

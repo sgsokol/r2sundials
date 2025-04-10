@@ -7,7 +7,7 @@
 #  define SUNDIALS_NO_EXPORT
 #else
 #  ifndef SUNDIALS_EXPORT
-#    ifdef sundials_generic_EXPORTS
+#    ifdef sundials_core_EXPORTS
         /* We are building this library */
 #      define SUNDIALS_EXPORT __attribute__((visibility("default")))
 #    else
