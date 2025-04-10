@@ -1,8 +1,8 @@
 Package: r2sundials
 Type: Package
 Title: Wrapper for 'SUNDIALS' Solving ODE and Sensitivity Problem
-Version: 7.2.1-2
-Date: 2025-04-08
+Version: 7.2.1-3
+Date: 2025-04-10
 Authors@R: c(
    person("Serguei", "Sokol", role=c("cre", "aut"), email="sokol@insa-toulouse.fr"),
    person("Carol S.", "Woodward", role="ctb"),

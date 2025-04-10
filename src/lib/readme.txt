@@ -47,4 +47,4 @@ cp -a $SUNTOP/build/include/sundials/{sundials_config,sundials_export}.h $MYTOP/
 # replace sunsrc var in src/Makevars with the output of
 find lib -type f -name '*'.c ! -path '*.old' ! -name '*_mpi_*' | tr $'\n' ' '
 
-# patch nvector_serial.c to exclude stdout
+# patch *.c to exclude stdout, stderr, fprintf, sprintf, abort
