@@ -127,8 +127,6 @@ CVodeGetNumRhsEvals() call. For detailed meaning of each statistics, user is inv
 }
 \details{
 The package \pkg{r2sundials} was designed to avoid as much as possible memory reallocation in callback functions (\code{frhs} and others). C++ variants of these functions are fully compliant with this design principle. While R counterparts are not (as per R design).\cr
-However, there is a package \code{ast2ast} providing a function  \code{\link[ast2ast]{translate}} which can automatically
-convert some subset of R to C++ code. The result can be a pointer to a compiled C++ function which can be directly used in \code{r2cvodes()}. A tutorial is avalable at https://konrad1991.github.io/ast2ast-examples/ .\cr
 In this package, we define callback function interfaces that user has to abide to. Pointers to C++ variants to be passed to \code{r2cvodes()} can be obtained with the help of \pkg{RcppXPtrUtils}. See examples for illustrations of such use.
 \cr Right hand side function \code{frhs} provided by user calculates derivative vector \eqn{y'}. This function can be defined as classical R function or a Rcpp/RcppArmadillo function. In the first case, it must have the following list of input arguments\cr
 \code{frhs(t, y, param, psens)}\cr
@@ -397,7 +395,4 @@ for (j in 1:3) # run through pv
            ylab=parse(text=paste0("partialdiff*y[", i, "]/partialdiff*k[", j, "]")))
 }
 
-}
-\seealso{
-\code{\link[ast2ast]{translate}}
 }

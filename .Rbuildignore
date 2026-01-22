@@ -5,3 +5,4 @@ rm/.*
 gdb.txt
 .*\.old
 ^include
+.*\.toremove

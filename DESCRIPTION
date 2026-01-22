@@ -1,8 +1,8 @@
 Package: r2sundials
 Type: Package
 Title: Wrapper for 'SUNDIALS' Solving ODE and Sensitivity Problem
-Version: 7.2.1-3
-Date: 2025-04-10
+Version: 7.2.1-4
+Date: 2026-01-22
 Authors@R: c(
    person("Serguei", "Sokol", role=c("cre", "aut"), email="sokol@insa-toulouse.fr"),
    person("Carol S.", "Woodward", role="ctb"),
@@ -44,7 +44,7 @@ Depends: R (>= 3.0.2), rmumps (>= 5.2.1-6)
 License: GPL (>=2)
 Imports: Rcpp (>= 1.0.0)
 LinkingTo: Rcpp, RcppArmadillo, rmumps (>= 5.2.1-6)
-Suggests: RcppXPtrUtils, slam, RUnit, deSolve, RcppArmadillo, ast2ast
+Suggests: RcppXPtrUtils, slam, RUnit, deSolve, RcppArmadillo
 RoxygenNote: 7.3.2
 Encoding: UTF-8
 NeedsCompilation: yes
